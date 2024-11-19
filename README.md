@@ -15,6 +15,8 @@ Works seamlessly together with the Bing Wallpaper app.
 Please feel free to send updates.
 
 ![image](https://github.com/user-attachments/assets/8f96464c-3328-45b1-aa89-abf8bb8572df)
+![image](https://github.com/user-attachments/assets/e6febd55-9c0e-4bec-8dd0-5bc429c4cc4a)
+
 
 ### You can use Task Scheduler to autorun this code on Windows startup
 
