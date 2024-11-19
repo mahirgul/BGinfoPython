@@ -9,16 +9,18 @@ import requests
 from io import BytesIO
 import time
 import winreg
+
 #openweathermap.org api
 WEATHER_API_KEY = "your_key"
 WEATHER_CITY = "Vienna" 
+WEATHER_ICON_FOLDER = "C:/Python313/icons/"
 
 def get_wallpaper_path():
-    # HKEY_CURRENT_USER\Control Panel\Desktop anahtarını aç
+    # Open the "Control Panel\Desktop" registry key
     reg_key = r"Control Panel\Desktop"
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_key)
-        # "Wallpaper" değerini oku
+        # Read the "Wallpaper" value
         wallpaper_path, _ = winreg.QueryValueEx(key, "WallPaper")
         winreg.CloseKey(key)
         return wallpaper_path
@@ -41,14 +43,14 @@ def get_weather():
         print("Error Weather")        
         return "Weather data unavailable", None
         
-def get_weather_icon(icon_code, icon_folder="icons"):
-    """Check if weather icon exists in the folder, otherwise download from URL."""
-    os.makedirs(icon_folder, exist_ok=True)  # Ensure the folder exists
-    local_icon_path = os.path.join(icon_folder, f"{icon_code}.png")
+def get_weather_icon(icon_code):
+    """Check if the weather icon exists in the folder, otherwise download it from the URL."""
+    os.makedirs(WEATHER_ICON_FOLDER, exist_ok=True)  # Ensure the folder exists
+    local_icon_path = os.path.join(WEATHER_ICON_FOLDER, f"{icon_code}.png")
     
-    # Check if icon already exists
+    # Check if the icon already exists
     if os.path.exists(local_icon_path):
-        print("icon exist")
+        print("icon exists")
         return Image.open(local_icon_path)
     
     # If not, download the icon
@@ -74,24 +76,21 @@ def update_wallpaper():
 
     # Specify the path of the folder containing images
     image_folder = os.path.dirname(wallpaper_path)
-    image_filename= os.path.basename(wallpaper_path)
+    image_filename = os.path.basename(wallpaper_path)
     backup_folder = os.path.join(image_folder, "backup/")
-
-    # Get today's date
-    #today_date = datetime.datetime.now().strftime("%Y%m%d")
 
     os.makedirs(backup_folder, exist_ok=True)  # Ensure the backup folder exists
     
-    # Create backup file path
+    # Create the backup file path
     backup_file_path = os.path.join(backup_folder, f"{image_filename}.backup.jpg")    
 
-    # Check if a backup file exists for today
+    # Check if a backup file exists
     if os.path.exists(backup_file_path):
-        print(f"Backup file for today exists. Using backup file: {backup_file_path}")
+        print(f"Backup file exists. Using backup file: {backup_file_path}")
         image_path = backup_file_path  # Use the backup file
     else:
-        print("No backup file for today. Creating a new backup.")
-        # Copy selected image to the backup folder
+        print("No backup file found. Creating a new backup.")
+        # Copy the selected image to the backup folder
         image = Image.open(wallpaper_path)  # Open the original image
         image.save(backup_file_path)  # Save it as a backup
 
@@ -108,7 +107,7 @@ def update_wallpaper():
 
     # Shadow and background settings
     blur_radius = 5  # Blur radius for shadow
-    background_padding = 20  # Extra size for background compared to text
+    background_padding = 20  # Extra size for the background compared to text
     corner_radius = 15  # Roundness of corners
     table_padding = 10  # Padding around the table
     table_row_height = 40  # Height between rows
@@ -129,20 +128,17 @@ def update_wallpaper():
 
                 table_data.append((iface_name, iface_ip))
 
-    # Add last update time to table data
+    # Add the last update time to the table data
     last_update_time = f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     table_data.append(("", ""))
     table_data.append(("Last Update", last_update_time))
     table_data.append(("", ""))
 
-    
-
-    # Replace 'YOUR_API_KEY' with your OpenWeatherMap API key
+    # Fetch weather data
     weather_info, weather_icon_code = get_weather()
     table_data.append(("Weather", weather_info))  # Add weather info to the table
     table_data.append(("", ""))
     table_data.append(("", ""))    
-    
 
     # Calculate table dimensions
     draw = ImageDraw.Draw(image)
@@ -183,50 +179,34 @@ def update_wallpaper():
         table_y_offset += table_row_height
 
     # Add weather icon to the bottom of the table
-    # İkonu kabartma efektiyle eklemek için güncellenmiş kısım
     if weather_icon_code:
         icon_image = get_weather_icon(weather_icon_code)
         
-        # İkonun boyutlarını ayarla
-        icon_size = (150, 150)  # Daha küçük bir boyut isterseniz ayarlayabilirsiniz
+        # Resize the icon
+        icon_size = (150, 150)
         icon_image = icon_image.resize(icon_size, Image.Resampling.LANCZOS)
         icon_image = icon_image.convert("RGBA")
         
-        icon_x = width - table_width-20
-        icon_y = table_y_offset -80 
+        icon_x = width - table_width - 20
+        icon_y = table_y_offset - 80 
         
-        highlight_layer = Image.new("RGBA", icon_size, (255, 255, 255, 0))  # Şeffaf beyaz katman
+        # Add a highlight effect for the icon
+        highlight_layer = Image.new("RGBA", icon_size, (255, 255, 255, 0))
         highlight_draw = ImageDraw.Draw(highlight_layer)
         highlight_draw.ellipse(
-            [10, 10, icon_size[0] - 10, icon_size[1] - 10],  # Hafif içe doğru elips
-            fill=(255, 255, 255, 100)  # Hafif şeffaf bir beyaz
+            [10, 10, icon_size[0] - 10, icon_size[1] - 10],
+            fill=(255, 255, 255, 100)
         )
-
-        # Highlight efektini ikonun üzerine ekle
         image.paste(highlight_layer, (icon_x, icon_y), highlight_layer)
 
-        # İkon için gölge oluştur
+        # Add shadow for the icon
         shadow_icon = icon_image.copy().convert("RGBA")
-        shadow_layer1 = Image.new("RGBA", icon_size, (0, 0, 0, 0))
-        shadow_draw = ImageDraw.Draw(shadow_layer1)
-        
-        # Gölgeyi biraz genişlet ve bulanıklaştır
         shadow_icon = shadow_icon.filter(ImageFilter.GaussianBlur(10))
-        #shadow_icon = shadow_icon.point(lambda p: p )  # Şeffaflık ekle (daha karanlık)
-        
-        # İkonun pozisyonu
-        
-
-        # Gölgeyi ikonun altına hafifçe kaydırarak yerleştir
         shadow_position = (icon_x + 5, icon_y + 5)
         image.paste(shadow_icon, shadow_position, shadow_icon)
 
-        # İkonu orijinal pozisyonuna yerleştir
+        # Paste the icon on its original position
         image.paste(icon_image, (icon_x, icon_y), icon_image)
-
-        # Parlaklık ve aydınlatma için bir "highlight" efekti ekle
-        
-
 
     # Save the updated image as the new wallpaper
     new_wallpaper_path = os.path.join(image_folder, wallpaper_path)
