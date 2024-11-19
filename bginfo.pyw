@@ -9,7 +9,7 @@ import requests
 from io import BytesIO
 import time
 import winreg
-
+#openweathermap.org api
 WEATHER_API_KEY = "your_key"
 WEATHER_CITY = "Vienna" 
 
