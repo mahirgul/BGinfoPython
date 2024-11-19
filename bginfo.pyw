@@ -87,8 +87,6 @@ def get_weather_icon(icon_code):
     return None
         
 def update_wallpaper():
-    # Retrieve user, device name, and IP address information
-    
     
     wallpaper_path = get_wallpaper_path()
 
