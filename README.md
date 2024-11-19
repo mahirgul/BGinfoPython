@@ -2,10 +2,15 @@
 
 
 Automatically recognises the position of the Background image.
+
 Backs up the old background image on /backup folder in same folder .
+
 Adds weather information (openweathermap.org api required)
+
 For weather icons Uses pics from the /icons folder 
+
 Works seamlessly together with the Bing Wallpaper app.
+
 
 Please feel free to send updates.
 
