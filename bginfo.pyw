@@ -26,6 +26,8 @@ INFO_HOST = settings["INFO"]["INFO_HOST"]
 INFO_TIME = settings["INFO"]["INFO_TIME"]
 INFO_DATE = settings["INFO"]["INFO_DATE"]
 INFO_LANS = settings["INFO"]["INFO_LANS"]
+INFO_CPU = settings["INFO"]["INFO_CPU"]
+INFO_RAM = settings["INFO"]["INFO_RAM"]
 
 print(f"WEATHER_API_KEY: {WEATHER_API_KEY}")
 print(f"WEATHER_CITY: {WEATHER_CITY}")
@@ -57,7 +59,7 @@ def get_weather():
         icon_code = data['weather'][0]['icon']  # Get weather icon code
         
         print(data) 
-        return f"{temperature}°C,", weather_description.capitalize(), icon_code, f"{feelslike}°C", f"{wind} meter/sec"
+        return f"{temperature}°C,", weather_description.capitalize(), icon_code, f"{feelslike}°C", f"{wind} mt/s"
     else:
         print("Error Weather")        
         return "Weather data unavailable", None
@@ -85,8 +87,83 @@ def get_weather_icon(icon_code):
         print(f"Error fetching weather icon: {e}")
     
     return None
+    
+def get_pc_info(table_data):
+    if INFO_USER:
+        username = getpass.getuser()    
+        table_data.append(("User :", username))
+    
+    if INFO_HOST:
+        hostname = socket.gethostname()
+        table_data.append(("Host :", hostname))
+    
+def get_cpu_infos(table_data):
+    if INFO_CPU:
+        table_data.append(("", ""))
+
+        logical_cores = psutil.cpu_count(logical=True)
+        physical_cores = psutil.cpu_count(logical=False)
+        cpu_frequency = psutil.cpu_freq()
+
+        # Frekansı okunabilir hale getir
+        cpu_freq_str = f"{cpu_frequency.current:.2f} MHz"
+
+        table_data.append(("CPU Cores :", f"{logical_cores} L / {physical_cores} P"))
+        table_data.append(("CPU Freq :", cpu_freq_str))
+
+def get_ram_infos(table_data):
+    if INFO_RAM:
+        table_data.append(("", ""))
+
+        virtual_memory = psutil.virtual_memory()
+        print("RAM Bilgileri:")
+        print(f"  Toplam Bellek: {virtual_memory.total / (1024 ** 3):.2f} GB")
+        print(f"  Kullanılabilir Bellek: {virtual_memory.available / (1024 ** 3):.2f} GB")
+        print(f"  Kullanılan Bellek: {virtual_memory.used / (1024 ** 3):.2f} GB")
+        print(f"  Boş Bellek: {virtual_memory.free / (1024 ** 3):.2f} GB")
+        print(f"  Bellek Kullanım Yüzdesi: {virtual_memory.percent}%")
         
-def update_wallpaper():
+        swap_memory = psutil.swap_memory()
+        print("\nSwap Bellek Bilgileri:")
+        print(f"  Toplam Swap: {swap_memory.total / (1024 ** 3):.2f} GB")
+        print(f"  Kullanılan Swap: {swap_memory.used / (1024 ** 3):.2f} GB")
+        print(f"  Boş Swap: {swap_memory.free / (1024 ** 3):.2f} GB")
+        print(f"  Swap Kullanım Yüzdesi: {swap_memory.percent}%")
+        
+        table_data.append(("Total Ram :", f"{virtual_memory.total / (1024 ** 3):.2f} GB"))
+        table_data.append(("Used Ram :", f"{virtual_memory.used / (1024 ** 3):.2f} GB"))
+        table_data.append(("Used % :", f"{virtual_memory.percent}%"))
+       
+def get_network_infos(table_data):
+    if INFO_LANS:
+        table_data.append(("", ""))
+
+        # Retrieve IP addresses of network interfaces
+        network_info = psutil.net_if_addrs()
+        for iface, addrs in network_info.items():
+            for addr in addrs:
+                if addr.family == socket.AF_INET:  # Only include IPv4 addresses
+                    iface_name = iface
+                    iface_ip = addr.address
+
+                    # Skip addresses starting with 169.254.x.x or 127.0.0.1
+                    if iface_ip.startswith("169.254") or iface_ip.startswith("127.0.0.1"):
+                        continue
+
+                    table_data.append((iface_name, iface_ip))
+                    
+def get_date_time(table_data):    
+    if INFO_TIME:
+        last_update_time = f"{datetime.datetime.now().strftime('%H:%M:%S')}"        
+        table_data.append(("", ""))
+        table_data.append(("Update Time :", last_update_time))
+        
+    if INFO_DATE:
+        today_date = f"{datetime.datetime.now().strftime('%Y-%m-%d')}"
+        table_data.append(("", ""))
+        table_data.append(("Date :", today_date))        
+        
+def update_wallpaper():   
     
     wallpaper_path = get_wallpaper_path()
 
@@ -128,41 +205,20 @@ def update_wallpaper():
     table_padding = 10  # Padding around the table
     table_row_height = 40  # Height between rows
 
-    # Retrieve IP addresses of network interfaces
-    network_info = psutil.net_if_addrs()
+    
     table_data = [("", "")]
     
-    if INFO_USER:
-        username = getpass.getuser()    
-        table_data.append(("User :", username))
+    get_pc_info(table_data)
     
-    if INFO_HOST:
-        hostname = socket.gethostname()
-        table_data.append(("Host :", hostname))
+    get_cpu_infos(table_data)
     
-    table_data.append(("", ""))  # Add username and hostname as the first two rows
-
-    for iface, addrs in network_info.items():
-        for addr in addrs:
-            if addr.family == socket.AF_INET:  # Only include IPv4 addresses
-                iface_name = iface
-                iface_ip = addr.address
-
-                # Skip addresses starting with 169.254.x.x or 127.0.0.1
-                if iface_ip.startswith("169.254") or iface_ip.startswith("127.0.0.1"):
-                    continue
-
-                table_data.append((iface_name, iface_ip))
-
-    # Add the last update time to the table data
-    last_update_time = f"{datetime.datetime.now().strftime('%H:%M:%S')}"
-    today_date = f"{datetime.datetime.now().strftime('%Y-%m-%d')}"
+    get_network_infos(table_data)
+    
+    get_ram_infos(table_data)
+    
+    get_date_time(table_data)
+    
     table_data.append(("", ""))
-    table_data.append(("Update Time :", last_update_time))
-    table_data.append(("", ""))
-    table_data.append(("Date :", today_date))
-    table_data.append(("", ""))
-
     # Fetch weather data
     weather_temp, weather_desc, weather_icon_code, weather_feels_like, weather_wind_speed = get_weather()
     table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
