@@ -21,11 +21,14 @@ WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
 WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
 WEATHER_LANG = settings["WEATHER"]["WEATHER_LANG"]
 
-db_host = settings["database"]["host"]
-app_debug = settings["app"]["debug"]
+INFO_USER = settings["INFO"]["INFO_USER"]
+INFO_HOST = settings["INFO"]["INFO_HOST"]
+INFO_TIME = settings["INFO"]["INFO_TIME"]
+INFO_DATE = settings["INFO"]["INFO_DATE"]
+INFO_LANS = settings["INFO"]["INFO_LANS"]
 
-print(f"Database Host: {WEATHER_API_KEY}")
-print(f"Debug Mode: {WEATHER_CITY}")
+print(f"WEATHER_API_KEY: {WEATHER_API_KEY}")
+print(f"WEATHER_CITY: {WEATHER_CITY}")
 
 
 def get_wallpaper_path():
@@ -85,8 +88,7 @@ def get_weather_icon(icon_code):
         
 def update_wallpaper():
     # Retrieve user, device name, and IP address information
-    username = getpass.getuser()
-    hostname = socket.gethostname()
+    
     
     wallpaper_path = get_wallpaper_path()
 
@@ -130,7 +132,17 @@ def update_wallpaper():
 
     # Retrieve IP addresses of network interfaces
     network_info = psutil.net_if_addrs()
-    table_data = [("", ""), ("User :", username), ("Host :", hostname), ("", "")]  # Add username and hostname as the first two rows
+    table_data = [("", "")]
+    
+    if INFO_USER:
+        username = getpass.getuser()    
+        table_data.append(("User :", username))
+    
+    if INFO_HOST:
+        hostname = socket.gethostname()
+        table_data.append(("Host :", hostname))
+    
+    table_data.append(("", ""))  # Add username and hostname as the first two rows
 
     for iface, addrs in network_info.items():
         for addr in addrs:
