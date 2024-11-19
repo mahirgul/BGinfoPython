@@ -1,6 +1,6 @@
 {
     "WEATHER": {
-        "WEATHER_API_KEY": "f4627fd8a22b4ffdeec04def02772db0",
+        "WEATHER_API_KEY": "your_keys",
         "WEATHER_CITY": "Vienna",
         "WEATHER_CUSTOM_ICO": true,		
         "WEATHER_ICON_FOLDER": "icons",
