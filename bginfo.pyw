@@ -66,7 +66,7 @@ def get_weather(table_data):
         table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
         table_data.append(("Feels Like :", weather_feels_like))  # Add weather info to the table
         table_data.append(("Wind Speed :", weather_wind_speed))  # Add weather info to the table
-        table_data.append(("Status :", weather_desc))  # Add weather info to the table
+        table_data.append(("Status :", weather_desc.capitalize()))  # Add weather info to the table
         table_data.append(("", ""))
         table_data.append(("", ""))
         return weather_icon_code
@@ -88,6 +88,7 @@ def get_weather_icon(icon_code):
     
     # Check if the icon already exists
     if WEATHER_CUSTOM_ICO:
+        print(f"icon path{local_icon_path}")
         if os.path.exists(local_icon_path):
             print("icon exists")
             return Image.open(local_icon_path)
@@ -98,8 +99,7 @@ def get_weather_icon(icon_code):
     try:
         response = requests.get(icon_url)
         if response.status_code == 200:
-            icon_image = Image.open(BytesIO(response.content))
-            icon_image.save(local_icon_path)  # Save the downloaded icon locally
+            icon_image = Image.open(BytesIO(response.content))            
             return icon_image
     except Exception as e:
         print(f"Error fetching weather icon: {e}")
