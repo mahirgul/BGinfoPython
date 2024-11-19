@@ -11,11 +11,11 @@ import time
 import winreg
 import json
 
-# Settings dosyasını yükleme
+# settings.json file loading
 with open("settings.json", "r") as file:
     settings = json.load(file)
 
-# Settings değerlerini kullanma
+# Use settings.json file vaules
 WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
 WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
 WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
