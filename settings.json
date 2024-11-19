@@ -10,6 +10,8 @@
         "INFO_HOST": true,
         "INFO_TIME": true,
         "INFO_DATE": true,
-        "INFO_LANS": true        
+        "INFO_LANS": true,
+        "INFO_CPU": true,    
+        "INFO_RAM": true        
     }
 }
