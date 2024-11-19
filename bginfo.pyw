@@ -18,6 +18,7 @@ with open("settings.json", "r") as file:
 # Use settings.json file vaules
 WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
 WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
+WEATHER_CUSTOM_ICO = settings["WEATHER"]["WEATHER_CUSTOM_ICO"]
 WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
 WEATHER_LANG = settings["WEATHER"]["WEATHER_LANG"]
 
@@ -47,33 +48,50 @@ def get_wallpaper_path():
         return None
         
 # Function to fetch weather data
-def get_weather():
+def get_weather(table_data):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={WEATHER_CITY}&units=metric&appid={WEATHER_API_KEY}&lang={WEATHER_LANG}"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
-        weather_description = data['weather'][0]['description']
-        temperature = data['main']['temp']
-        feelslike = data['main']['feels_like']
-        wind = data['wind']['speed']
-        icon_code = data['weather'][0]['icon']  # Get weather icon code
+        weather_desc = data['weather'][0]['description']
+        weather_temp = data['main']['temp']
+        weather_feels_like = data['main']['feels_like']
+        weather_wind_speed = data['wind']['speed']
+        weather_icon_code = data['weather'][0]['icon']  # Get weather icon code
         
-        print(data) 
-        return f"{temperature}°C,", weather_description.capitalize(), icon_code, f"{feelslike}°C", f"{wind} mt/s"
+        print(f"{weather_temp}°C,", weather_desc.capitalize(), weather_icon_code, f"{weather_feels_like}°C", f"{weather_wind_speed} mt/s")
+        
+        table_data.append(("", ""))
+        
+        table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
+        table_data.append(("Feels Like :", weather_feels_like))  # Add weather info to the table
+        table_data.append(("Wind Speed :", weather_wind_speed))  # Add weather info to the table
+        table_data.append(("Status :", weather_desc))  # Add weather info to the table
+        table_data.append(("", ""))
+        table_data.append(("", ""))
+        return weather_icon_code
     else:
-        print("Error Weather")        
-        return "Weather data unavailable", None
+        print("Error Weather")
+        table_data.append(("Weather", "Error"))
+        return ""
+        
         
 def get_weather_icon(icon_code):
-    """Check if the weather icon exists in the folder, otherwise download it from the URL."""
-    os.makedirs(WEATHER_ICON_FOLDER, exist_ok=True)  # Ensure the folder exists
-    local_icon_path = os.path.join(WEATHER_ICON_FOLDER, f"{icon_code}.png")
+    print(f"icon code={icon_code}")
+
+    #Check if the weather icon exists in the folder, otherwise download it from the URL.
+    icons_folder = os.path.dirname(os.path.abspath(__file__))
+    icons_folder = os.path.join(icons_folder, WEATHER_ICON_FOLDER)
+
+    os.makedirs(icons_folder, exist_ok=True)  # Ensure the folder exists
+    local_icon_path = os.path.join(icons_folder, f"{icon_code}.png")
     
     # Check if the icon already exists
-    if os.path.exists(local_icon_path):
-        print("icon exists")
-        return Image.open(local_icon_path)
-    
+    if WEATHER_CUSTOM_ICO:
+        if os.path.exists(local_icon_path):
+            print("icon exists")
+            return Image.open(local_icon_path)
+        
     # If not, download the icon
     icon_url = f"http://openweathermap.org/img/wn/{icon_code}@4x.png"
     print("icon downloading")
@@ -161,12 +179,9 @@ def get_date_time(table_data):
     if INFO_DATE:
         today_date = f"{datetime.datetime.now().strftime('%Y-%m-%d')}"
         table_data.append(("", ""))
-        table_data.append(("Date :", today_date))        
+        table_data.append(("Date :", today_date))
         
-def update_wallpaper():   
-    
-    wallpaper_path = get_wallpaper_path()
-
+def backup_wallpaper(wallpaper_path):
     # Specify the path of the folder containing images
     image_folder = os.path.dirname(wallpaper_path)
     image_filename = os.path.basename(wallpaper_path)
@@ -186,88 +201,12 @@ def update_wallpaper():
         # Copy the selected image to the backup folder
         image = Image.open(wallpaper_path)  # Open the original image
         image.save(backup_file_path)  # Save it as a backup
-
-    # Load and process the image
-    image = Image.open(backup_file_path)
-
-    # Set the font for the text
-    try:
-        font = ImageFont.truetype("arial.ttf", 30)  # For Windows
-        bold_font = ImageFont.truetype("arialbd.ttf", 30)  # Bold font
-    except IOError:
-        font = ImageFont.load_default()  # Use default font if arial.ttf is unavailable
-        bold_font = font
-
-    # Shadow and background settings
-    blur_radius = 5  # Blur radius for shadow
-    background_padding = 20  # Extra size for the background compared to text
-    corner_radius = 15  # Roundness of corners
-    table_padding = 10  # Padding around the table
-    table_row_height = 40  # Height between rows
-
+        
+    return backup_file_path
     
-    table_data = [("", "")]
-    
-    get_pc_info(table_data)
-    
-    get_cpu_infos(table_data)
-    
-    get_network_infos(table_data)
-    
-    get_ram_infos(table_data)
-    
-    get_date_time(table_data)
-    
-    table_data.append(("", ""))
-    # Fetch weather data
-    weather_temp, weather_desc, weather_icon_code, weather_feels_like, weather_wind_speed = get_weather()
-    table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
-    table_data.append(("Feels Like :", weather_feels_like))  # Add weather info to the table
-    table_data.append(("Wind Speed :", weather_wind_speed))  # Add weather info to the table
-    table_data.append(("Status :", weather_desc))  # Add weather info to the table
-    table_data.append(("", ""))
-    table_data.append(("", ""))    
-
-    # Calculate table dimensions
-    draw = ImageDraw.Draw(image)
-    table_width = max([draw.textbbox((0, 0), f"{iface}: {ip}", font=font)[2] for iface, ip in table_data]) + 2 * table_padding
-    table_height = len(table_data) * table_row_height + 2 * table_padding
-
-    # Draw a rounded rectangle for the table background
-    width, height = image.size
-    table_background_rect = (
-        width - table_width - 10,
-        10,
-        width - 10,
-        table_height + 10 + (50 if weather_icon_code else 0)  # Add extra space for the icon
-    )
-
-    # Draw the background with a shadow
-    shadow_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    shadow_draw = ImageDraw.Draw(shadow_layer)
-    shadow_draw.rounded_rectangle(table_background_rect, fill="black", radius=corner_radius)
-    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(blur_radius))
-    image = Image.alpha_composite(image.convert("RGBA"), shadow_layer)
-
-    # Add table text to the top-right corner
-    table_y_offset = table_background_rect[1] + table_padding
-    for iface_name, iface_ip in table_data:
-        table_text_left = iface_name
-        table_text_right = iface_ip
-
-        draw = ImageDraw.Draw(image)
-        draw.text((table_background_rect[0] + table_padding, table_y_offset), table_text_left, font=font, fill="white")
-
-        # Calculate text dimensions using textbbox()
-        text_bbox = draw.textbbox((0, 0), table_text_right, font=bold_font)
-        text_width = text_bbox[2] - text_bbox[0]
-
-        # Position for right-aligned text
-        draw.text((width - table_padding - text_width, table_y_offset), table_text_right, font=bold_font, fill="yellow")  # Bold yellow text
-        table_y_offset += table_row_height
-
-    # Add weather icon to the bottom of the table
+def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offset):
     if weather_icon_code:
+        print (f"icon code{weather_icon_code}")
         icon_image = get_weather_icon(weather_icon_code)
         
         # Resize the icon
@@ -295,6 +234,86 @@ def update_wallpaper():
 
         # Paste the icon on its original position
         image.paste(icon_image, (icon_x, icon_y), icon_image)
+        
+def update_wallpaper():   
+    
+    wallpaper_path = get_wallpaper_path()
+    image_folder = os.path.dirname(wallpaper_path)
+    
+    backup_file_path = backup_wallpaper(wallpaper_path)    
+
+    # Load and process the image
+    image = Image.open(backup_file_path)
+
+    # Set the font for the text
+    try:
+        font = ImageFont.truetype("arial.ttf", 30)  # For Windows
+        bold_font = ImageFont.truetype("arialbd.ttf", 30)  # Bold font
+    except IOError:
+        font = ImageFont.load_default()  # Use default font if arial.ttf is unavailable
+        bold_font = font
+
+    # Shadow and background settings
+    blur_radius = 5  # Blur radius for shadow
+    background_padding = 20  # Extra size for the background compared to text
+    corner_radius = 15  # Roundness of corners
+    table_padding = 10  # Padding around the table
+    table_row_height = 40  # Height between rows
+    
+    table_data = [("", "")]
+    
+    get_pc_info(table_data)
+    
+    get_cpu_infos(table_data)
+    
+    get_network_infos(table_data)
+    
+    get_ram_infos(table_data)
+    
+    get_date_time(table_data)
+    
+    weather_icon_code = get_weather(table_data)
+    
+    # Calculate table dimensions
+    draw = ImageDraw.Draw(image)
+    table_width = max([draw.textbbox((0, 0), f"{iface}: {ip}", font=font)[2] for iface, ip in table_data]) + 2 * table_padding
+    table_height = len(table_data) * table_row_height + 2 * table_padding
+
+    # Draw a rounded rectangle for the table background
+    width, height = image.size
+    table_background_rect = (
+        width - table_width - 10,
+        10,
+        width - 10,
+        table_height + 10 + (50 if weather_icon_code else 0)  # Add extra space for the icon
+    )
+
+    # Draw the background with a shadow
+    shadow_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    shadow_draw = ImageDraw.Draw(shadow_layer)
+    shadow_draw.rounded_rectangle(table_background_rect, fill="black", radius=corner_radius)
+    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(blur_radius))
+    image = Image.alpha_composite(image.convert("RGBA"), shadow_layer)
+
+    # Add table text to the top-right corner
+    table_y_offset = table_background_rect[1] + table_padding
+    for data_name, data_value in table_data:
+        table_text_left = str(data_name)  # iface_name'i string'e çevir
+        table_text_right = str(data_value)  # iface_ip'i string'e çevir
+
+        draw = ImageDraw.Draw(image)
+        draw.text((table_background_rect[0] + table_padding, table_y_offset), table_text_left, font=font, fill="white")
+
+        # Calculate text dimensions using textbbox()
+        text_bbox = draw.textbbox((0, 0), table_text_right, font=bold_font)
+        text_width = text_bbox[2] - text_bbox[0]
+
+        # Position for right-aligned text
+        draw.text((width - table_padding - text_width, table_y_offset), table_text_right, font=bold_font, fill="yellow")  # Bold yellow text
+        table_y_offset += table_row_height
+
+    # Add weather icon to the bottom of the table
+    add_weather_icon(image, weather_icon_code, width, table_width, table_y_offset)    
 
     # Save the updated image as the new wallpaper
     new_wallpaper_path = os.path.join(image_folder, wallpaper_path)
