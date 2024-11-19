@@ -14,7 +14,7 @@ Works seamlessly together with the Bing Wallpaper app.
 
 Please feel free to send updates.
 
-![image](https://github.com/user-attachments/assets/3e82babe-1a37-4ebc-b0d1-8f21c6f2978e)
+![image](https://github.com/user-attachments/assets/5f73b502-424a-41fb-b261-a6d57818584d)
 
 
 ![image](https://github.com/user-attachments/assets/e6febd55-9c0e-4bec-8dd0-5bc429c4cc4a)
