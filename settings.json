@@ -5,11 +5,11 @@
         "WEATHER_ICON_FOLDER": "C:/Python313/icons/",
         "WEATHER_LANG": "en"
     },
-    "INFOS": {
-        "user": true,
-        "host": true,
-        "updateTime": true,
-        "date": true,
-        "lanInterfaces": true        
+     "INFO": {
+        "INFO_USER": true,
+        "INFO_HOST": true,
+        "INFO_TIME": true,
+        "INFO_DATE": true,
+        "INFO_LANS": true        
     }
 }
