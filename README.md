@@ -1,4 +1,6 @@
 This application works like Microsoft bginfo. It adds information to your background image.
+
+
 Automatically recognises the position of the Background image.
 Backs up the old background image on /backup folder in same folder .
 Adds weather information (openweathermap.org api required)
