@@ -1,0 +1,15 @@
+{
+    "WEATHER": {
+        "WEATHER_API_KEY": "your_key",
+        "WEATHER_CITY": "Vienna",
+        "WEATHER_ICON_FOLDER": "C:/Python313/icons/",
+        "WEATHER_LANG": "en"
+    },
+    "INFOS": {
+        "user": true,
+        "host": true,
+        "updateTime": true,
+        "date": true,
+        "lanInterfaces": true        
+    }
+}
