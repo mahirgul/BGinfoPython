@@ -9,12 +9,24 @@ import requests
 from io import BytesIO
 import time
 import winreg
+import json
 
-#openweathermap.org api
-WEATHER_API_KEY = "your_key"
-WEATHER_CITY = "Vienna"
-WEATHER_ICON_FOLDER = "C:/Python313/icons/"
-WEATHER_LANG = "en"
+# Settings dosyasını yükleme
+with open("settings.json", "r") as file:
+    settings = json.load(file)
+
+# Settings değerlerini kullanma
+WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
+WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
+WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
+WEATHER_LANG = settings["WEATHER"]["WEATHER_LANG"]
+
+db_host = settings["database"]["host"]
+app_debug = settings["app"]["debug"]
+
+print(f"Database Host: {WEATHER_API_KEY}")
+print(f"Debug Mode: {WEATHER_CITY}")
+
 
 def get_wallpaper_path():
     # Open the "Control Panel\Desktop" registry key
