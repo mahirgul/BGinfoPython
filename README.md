@@ -8,7 +8,8 @@ For weather icons Uses pics from the /icons folder
 
 Please feel free to send updates.
 
-![image](https://github.com/user-attachments/assets/84e09057-ee02-4dae-b784-bdda20df4344)
+![image](https://github.com/user-attachments/assets/8f96464c-3328-45b1-aa89-abf8bb8572df)
+
 
 ![image](https://github.com/user-attachments/assets/d53e8513-9770-4171-b442-2f752010c898)
 
