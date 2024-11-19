@@ -12,8 +12,9 @@ import winreg
 
 #openweathermap.org api
 WEATHER_API_KEY = "your_key"
-WEATHER_CITY = "Vienna" 
+WEATHER_CITY = "Vienna"
 WEATHER_ICON_FOLDER = "C:/Python313/icons/"
+WEATHER_LANG = "en"
 
 def get_wallpaper_path():
     # Open the "Control Panel\Desktop" registry key
@@ -30,15 +31,18 @@ def get_wallpaper_path():
         
 # Function to fetch weather data
 def get_weather():
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={WEATHER_CITY}&units=metric&appid={WEATHER_API_KEY}"
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={WEATHER_CITY}&units=metric&appid={WEATHER_API_KEY}&lang={WEATHER_LANG}"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
         weather_description = data['weather'][0]['description']
         temperature = data['main']['temp']
+        feelslike = data['main']['feels_like']
+        wind = data['wind']['speed']
         icon_code = data['weather'][0]['icon']  # Get weather icon code
+        
         print(data) 
-        return f"{temperature}°C, {weather_description.capitalize()}", icon_code
+        return f"{temperature}°C,", weather_description.capitalize(), icon_code, f"{feelslike}°C", f"{wind} meter/sec"
     else:
         print("Error Weather")        
         return "Weather data unavailable", None
@@ -114,7 +118,7 @@ def update_wallpaper():
 
     # Retrieve IP addresses of network interfaces
     network_info = psutil.net_if_addrs()
-    table_data = [("", ""), ("User", username), ("Host", hostname), ("", "")]  # Add username and hostname as the first two rows
+    table_data = [("", ""), ("User :", username), ("Host :", hostname), ("", "")]  # Add username and hostname as the first two rows
 
     for iface, addrs in network_info.items():
         for addr in addrs:
@@ -129,14 +133,20 @@ def update_wallpaper():
                 table_data.append((iface_name, iface_ip))
 
     # Add the last update time to the table data
-    last_update_time = f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    last_update_time = f"{datetime.datetime.now().strftime('%H:%M:%S')}"
+    today_date = f"{datetime.datetime.now().strftime('%Y-%m-%d')}"
     table_data.append(("", ""))
-    table_data.append(("Last Update", last_update_time))
+    table_data.append(("Update Time :", last_update_time))
+    table_data.append(("", ""))
+    table_data.append(("Date :", today_date))
     table_data.append(("", ""))
 
     # Fetch weather data
-    weather_info, weather_icon_code = get_weather()
-    table_data.append(("Weather", weather_info))  # Add weather info to the table
+    weather_temp, weather_desc, weather_icon_code, weather_feels_like, weather_wind_speed = get_weather()
+    table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
+    table_data.append(("Feels Like :", weather_feels_like))  # Add weather info to the table
+    table_data.append(("Wind Speed :", weather_wind_speed))  # Add weather info to the table
+    table_data.append(("Status :", weather_desc))  # Add weather info to the table
     table_data.append(("", ""))
     table_data.append(("", ""))    
 
