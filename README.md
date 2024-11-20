@@ -12,6 +12,9 @@ For weather icons Uses pics from the /icons folder
 Works seamlessly together with the Bing Wallpaper app.
 
 
+#### pip install pillow psutil requests
+
+
 Please feel free to send updates.
 
 ![image](https://github.com/user-attachments/assets/5f73b502-424a-41fb-b261-a6d57818584d)
