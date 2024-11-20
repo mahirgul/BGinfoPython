@@ -25,7 +25,8 @@ pip install pillow psutil requests
 
 ## Please feel free to send updates.
 
-![image](https://github.com/user-attachments/assets/2b603eb1-9fb2-4aa5-adf9-850ae80da473)
+![image](https://github.com/user-attachments/assets/d5453278-1244-42ab-92af-1fe2f055c699)
+
 
 ## You can use Task Scheduler or just copy to Windows Startup folder to autorun this code on Windows startup.
 
