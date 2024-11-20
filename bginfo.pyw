@@ -30,6 +30,14 @@ INFO_LANS = settings["INFO"]["INFO_LANS"]
 INFO_CPU = settings["INFO"]["INFO_CPU"]
 INFO_RAM = settings["INFO"]["INFO_RAM"]
 
+blur_radius = settings["TABLE_SETTINGS"]["BLUR_RADIUS"]
+background_padding = settings["TABLE_SETTINGS"]["BACKGROUND_PADDING"]
+corner_radius = settings["TABLE_SETTINGS"]["CORNER_RADIUS"]
+table_padding = settings["TABLE_SETTINGS"]["TABLE_PADDING"]
+table_row_height = settings["TABLE_SETTINGS"]["TABLE_ROW_HEIGHT"]
+background_opacity = settings["TABLE_SETTINGS"]["BACKGROUND_OPACITY"]
+
+
 print(f"WEATHER_API_KEY: {WEATHER_API_KEY}")
 print(f"WEATHER_CITY: {WEATHER_CITY}")
 
@@ -252,13 +260,6 @@ def update_wallpaper():
     except IOError:
         font = ImageFont.load_default()  # Use default font if arial.ttf is unavailable
         bold_font = font
-
-    # Shadow and background settings
-    blur_radius = 5  # Blur radius for shadow
-    background_padding = 20  # Extra size for the background compared to text
-    corner_radius = 15  # Roundness of corners
-    table_padding = 10  # Padding around the table
-    table_row_height = 40  # Height between rows
     
     table_data = [("", "")]
     
@@ -276,7 +277,9 @@ def update_wallpaper():
     
     # Calculate table dimensions
     draw = ImageDraw.Draw(image)
-    table_width = max([draw.textbbox((0, 0), f"{iface}: {ip}", font=font)[2] for iface, ip in table_data]) + 2 * table_padding
+    # Calculate the maximum width of text in the table
+    table_width = max(draw.textbbox((0, 0), f"{name}: {value}", font=font)[2] for name, value in table_data) + 2 * table_padding
+    # Calculate the total height of the table
     table_height = len(table_data) * table_row_height + 2 * table_padding
 
     # Draw a rounded rectangle for the table background
@@ -288,10 +291,13 @@ def update_wallpaper():
         table_height + 10 + (50 if weather_icon_code else 0)  # Add extra space for the icon
     )
 
-    # Draw the background with a shadow
+    # Siyah arka plan rengi, saydamlıkla birlikte
+    background_color = (0, 0, 0, background_opacity)
+
+    # Draw the background with transparency
     shadow_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
     shadow_draw = ImageDraw.Draw(shadow_layer)
-    shadow_draw.rounded_rectangle(table_background_rect, fill="black", radius=corner_radius)
+    shadow_draw.rounded_rectangle(table_background_rect, fill=background_color, radius=corner_radius)
     shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(blur_radius))
     image = Image.alpha_composite(image.convert("RGBA"), shadow_layer)
 
