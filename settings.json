@@ -6,7 +6,7 @@
         "WEATHER_ICON_FOLDER": "icons",
         "WEATHER_LANG": "en"
     },
-        "INFO": {
+	"INFO": {
         "INFO_USER": true,
         "INFO_HOST": true,
         "INFO_TIME": true,
