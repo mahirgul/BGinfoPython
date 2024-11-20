@@ -6,7 +6,7 @@
         "WEATHER_ICON_FOLDER": "icons",
         "WEATHER_LANG": "en"
     },
-    "INFO": {
+        "INFO": {
         "INFO_USER": true,
         "INFO_HOST": true,
         "INFO_TIME": true,
@@ -14,5 +14,13 @@
         "INFO_LANS": true,
         "INFO_CPU": true,    
         "INFO_RAM": true        
+    },
+    "TABLE_SETTINGS": {
+        "BLUR_RADIUS": 5,
+        "BACKGROUND_PADDING": 50,
+        "CORNER_RADIUS": 25,
+        "TABLE_PADDING": 40,
+        "TABLE_ROW_HEIGHT": 40,
+        "BACKGROUND_OPACITY": 200
     }
 }
