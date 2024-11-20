@@ -218,11 +218,11 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
         icon_image = get_weather_icon(weather_icon_code)
         
         # Resize the icon
-        icon_size = (150, 150)
+        icon_size = (250, 250)
         icon_image = icon_image.resize(icon_size, Image.Resampling.LANCZOS)
         icon_image = icon_image.convert("RGBA")
         
-        icon_x = width - table_width - 20
+        icon_x = width - table_width + 70
         icon_y = table_y_offset - 80 
         
         # Add a highlight effect for the icon
