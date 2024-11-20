@@ -63,9 +63,9 @@ def get_weather(table_data):
         
         table_data.append(("", ""))
         
-        table_data.append(("Weather Temp :", weather_temp))  # Add weather info to the table
-        table_data.append(("Feels Like :", weather_feels_like))  # Add weather info to the table
-        table_data.append(("Wind Speed :", weather_wind_speed))  # Add weather info to the table
+        table_data.append(("Weather Temp :", f"{weather_temp} °C"))  # Add weather info to the table
+        table_data.append(("Feels Like :", f"{weather_feels_like} °C"))  # Add weather info to the table
+        table_data.append(("Wind Speed :", f"{weather_wind_speed} mt/s"))  # Add weather info to the table
         table_data.append(("Status :", weather_desc.capitalize()))  # Add weather info to the table
         table_data.append(("", ""))
         table_data.append(("", ""))
@@ -141,12 +141,12 @@ def get_ram_infos(table_data):
         print(f"  Boş Bellek: {virtual_memory.free / (1024 ** 3):.2f} GB")
         print(f"  Bellek Kullanım Yüzdesi: {virtual_memory.percent}%")
         
-        swap_memory = psutil.swap_memory()
-        print("\nSwap Bellek Bilgileri:")
-        print(f"  Toplam Swap: {swap_memory.total / (1024 ** 3):.2f} GB")
-        print(f"  Kullanılan Swap: {swap_memory.used / (1024 ** 3):.2f} GB")
-        print(f"  Boş Swap: {swap_memory.free / (1024 ** 3):.2f} GB")
-        print(f"  Swap Kullanım Yüzdesi: {swap_memory.percent}%")
+        # swap_memory = psutil.swap_memory()
+        # print("\nSwap Bellek Bilgileri:")
+        # print(f"  Toplam Swap: {swap_memory.total / (1024 ** 3):.2f} GB")
+        # print(f"  Kullanılan Swap: {swap_memory.used / (1024 ** 3):.2f} GB")
+        # print(f"  Boş Swap: {swap_memory.free / (1024 ** 3):.2f} GB")
+        # print(f"  Swap Kullanım Yüzdesi: {swap_memory.percent}%")
         
         table_data.append(("Total Ram :", f"{virtual_memory.total / (1024 ** 3):.2f} GB"))
         table_data.append(("Used Ram :", f"{virtual_memory.used / (1024 ** 3):.2f} GB"))
