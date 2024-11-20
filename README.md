@@ -1,30 +1,34 @@
-## This application works like Microsoft bginfo. It adds information to your background image.
+# BGinfoPython
+
+Application works like Microsoft bginfo. It adds information to your background image.
+
+## Specifications
+
+- Automatically recognises the position of the Background image.
+
+- Backs up the old background image on /backup folder in same folder .
+
+- Adds weather information (openweathermap.org api required)
+
+- For weather icons Uses pics from the /icons folder 
+
+- Works seamlessly together with the Bing Wallpaper app.
 
 
-Automatically recognises the position of the Background image.
+## Requirements
 
-Backs up the old background image on /backup folder in same folder .
+- Install python latest version.
 
-Adds weather information (openweathermap.org api required)
+```bash
+pip install pillow psutil requests
+```
 
-For weather icons Uses pics from the /icons folder 
+## Please feel free to send updates.
 
-Works seamlessly together with the Bing Wallpaper app.
+![image](https://github.com/user-attachments/assets/2b603eb1-9fb2-4aa5-adf9-850ae80da473)
 
-
-#### pip install pillow psutil requests
-
-
-Please feel free to send updates.
-
-![image](https://github.com/user-attachments/assets/5f73b502-424a-41fb-b261-a6d57818584d)
+## You can use Task Scheduler or just copy to Windows Startup folder to autorun this code on Windows startup.
 
 
-![image](https://github.com/user-attachments/assets/e6febd55-9c0e-4bec-8dd0-5bc429c4cc4a)
 
-
-### You can use Task Scheduler to autorun this code on Windows startup
-
-![image](https://github.com/user-attachments/assets/d53e8513-9770-4171-b442-2f752010c898)
-
-I used python, because why not!
+# I used python, because why not!
