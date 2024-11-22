@@ -4,6 +4,8 @@
         "WEATHER_CITY": "Vienna",
         "WEATHER_CUSTOM_ICO": true,		
         "WEATHER_ICON_FOLDER": "icons",
+        "WEATHER_ICON_SHADOW": false,
+        "WEATHER_ICON_HIGHLIGHT": false,
         "WEATHER_LANG": "en"
     },
 	"INFO": {

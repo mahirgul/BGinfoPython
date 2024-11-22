@@ -20,6 +20,8 @@ WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
 WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
 WEATHER_CUSTOM_ICO = settings["WEATHER"]["WEATHER_CUSTOM_ICO"]
 WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
+WEATHER_ICON_SHADOW = settings["WEATHER"]["WEATHER_ICON_SHADOW"]
+WEATHER_ICON_HIGHLIGHT = settings["WEATHER"]["WEATHER_ICON_HIGHLIGHT"]
 WEATHER_LANG = settings["WEATHER"]["WEATHER_LANG"]
 
 INFO_USER = settings["INFO"]["INFO_USER"]
@@ -229,19 +231,21 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
         icon_y = table_y_offset - 80 
         
         # Add a highlight effect for the icon
-        highlight_layer = Image.new("RGBA", icon_size, (255, 255, 255, 0))
-        highlight_draw = ImageDraw.Draw(highlight_layer)
-        highlight_draw.ellipse(
-            [10, 10, icon_size[0] - 10, icon_size[1] - 10],
-            fill=(255, 255, 255, 100)
-        )
-        image.paste(highlight_layer, (icon_x, icon_y), highlight_layer)
+        if(WEATHER_ICON_HIGHLIGHT):
+            highlight_layer = Image.new("RGBA", icon_size, (255, 255, 255, 0))
+            highlight_draw = ImageDraw.Draw(highlight_layer)
+            highlight_draw.ellipse(
+                [10, 10, icon_size[0] - 10, icon_size[1] - 10],
+                fill=(255, 255, 255, 100)
+            )
+            image.paste(highlight_layer, (icon_x, icon_y), highlight_layer)
 
         # Add shadow for the icon
-        shadow_icon = icon_image.copy().convert("RGBA")
-        shadow_icon = shadow_icon.filter(ImageFilter.GaussianBlur(10))
-        shadow_position = (icon_x + 5, icon_y + 5)
-        image.paste(shadow_icon, shadow_position, shadow_icon)
+        if(WEATHER_ICON_SHADOW):            
+            shadow_icon = icon_image.copy().convert("RGBA")
+            shadow_icon = shadow_icon.filter(ImageFilter.GaussianBlur(10))
+            shadow_position = (icon_x + 5, icon_y + 5)
+            image.paste(shadow_icon, shadow_position, shadow_icon)
 
         # Paste the icon on its original position
         image.paste(icon_image, (icon_x, icon_y), icon_image)
