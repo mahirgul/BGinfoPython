@@ -6,6 +6,7 @@
         "WEATHER_ICON_FOLDER": "icons",
         "WEATHER_ICON_SHADOW": false,
         "WEATHER_ICON_HIGHLIGHT": false,
+        "WEATHER_ICON_SIZE": 200,				
         "WEATHER_LANG": "en"
     },
 	"INFO": {

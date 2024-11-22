@@ -22,6 +22,7 @@ WEATHER_CUSTOM_ICO = settings["WEATHER"]["WEATHER_CUSTOM_ICO"]
 WEATHER_ICON_FOLDER = settings["WEATHER"]["WEATHER_ICON_FOLDER"]
 WEATHER_ICON_SHADOW = settings["WEATHER"]["WEATHER_ICON_SHADOW"]
 WEATHER_ICON_HIGHLIGHT = settings["WEATHER"]["WEATHER_ICON_HIGHLIGHT"]
+WEATHER_ICON_SIZE = settings["WEATHER"]["WEATHER_ICON_SIZE"]
 WEATHER_LANG = settings["WEATHER"]["WEATHER_LANG"]
 
 INFO_USER = settings["INFO"]["INFO_USER"]
@@ -220,14 +221,14 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
         icon_image = get_weather_icon(weather_icon_code)
         
         # Resize the icon        
-        new_width = 250
+        new_width = WEATHER_ICON_SIZE
         aspect_ratio = new_width / icon_image.width
         new_height = int(icon_image.height * aspect_ratio)
         icon_size = (new_width, new_height)        
         icon_image = icon_image.resize(icon_size, Image.Resampling.LANCZOS)
         icon_image = icon_image.convert("RGBA")
         
-        icon_x = width - table_width + 70
+        icon_x = width - (table_width+new_width)//2 
         icon_y = table_y_offset - 80 
         
         # Add a highlight effect for the icon
