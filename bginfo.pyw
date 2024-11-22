@@ -217,8 +217,11 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
         print (f"icon code{weather_icon_code}")
         icon_image = get_weather_icon(weather_icon_code)
         
-        # Resize the icon
-        icon_size = (250, 250)
+        # Resize the icon        
+        new_width = 250
+        aspect_ratio = new_width / icon_image.width
+        new_height = int(icon_image.height * aspect_ratio)
+        icon_size = (new_width, new_height)        
         icon_image = icon_image.resize(icon_size, Image.Resampling.LANCZOS)
         icon_image = icon_image.convert("RGBA")
         
@@ -324,6 +327,7 @@ def update_wallpaper():
     # Save the updated image as the new wallpaper
     new_wallpaper_path = os.path.join(image_folder, wallpaper_path)
     image.convert("RGB").save(new_wallpaper_path)
+    image.convert("RGB").save("C:/Python313/bginfo/photo/photo.jpg")
     print(f"New wallpaper saved at '{new_wallpaper_path}'.")
 
     # Set the new wallpaper as the desktop background
