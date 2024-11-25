@@ -332,7 +332,7 @@ def update_wallpaper():
     # Save the updated image as the new wallpaper
     new_wallpaper_path = os.path.join(image_folder, wallpaper_path)
     image.convert("RGB").save(new_wallpaper_path)
-    image.convert("RGB").save("C:/Python313/bginfo/photo/photo.jpg")
+    
     print(f"New wallpaper saved at '{new_wallpaper_path}'.")
 
     # Set the new wallpaper as the desktop background
