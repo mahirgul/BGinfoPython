@@ -12,6 +12,9 @@
 ## Requirements
 - Install python latest version.
 ```bash
+https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe
+```
+```bash
 pip install pillow psutil requests
 ```
 
