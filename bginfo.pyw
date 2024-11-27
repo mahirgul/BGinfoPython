@@ -17,6 +17,8 @@ try:
         settings = json.load(file)
 
     # Use settings.json file vaules
+    UPDATE_TIME = settings["APP"]["UPDATE_TIME"]
+    
     WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
     WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
     WEATHER_CUSTOM_ICO = settings["WEATHER"]["WEATHER_CUSTOM_ICO"]
@@ -44,6 +46,8 @@ try:
 
     print(f"WEATHER_API_KEY: {WEATHER_API_KEY}")
     print(f"WEATHER_CITY: {WEATHER_CITY}")
+    print(f"UPDATE_TIME: {UPDATE_TIME}")
+    
 except Exception as e:
         print(f"Error settings: {e}")    
 
@@ -369,6 +373,6 @@ def update_wallpaper():
 while True:
     try:
         update_wallpaper()
-        time.sleep(10)  # Wait for 10 seconds before updating again
+        time.sleep(int(UPDATE_TIME))  # Wait for 10 seconds before updating again
     except Exception as e:
         print(f"Error in main loop: {e}")

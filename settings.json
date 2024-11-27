@@ -1,4 +1,7 @@
 {
+	"APP": {
+        "UPDATE_TIME": "10"        
+    },
     "WEATHER": {
         "WEATHER_API_KEY": "your_keys",
         "WEATHER_CITY": "Vienna",
