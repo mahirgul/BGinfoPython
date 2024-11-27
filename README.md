@@ -7,7 +7,7 @@
 - Adds weather information (openweathermap.org api required)
 - For weather icons Uses pics from the /icons folder 
 - Works seamlessly together with the Bing Wallpaper app.
-- Updating in every 10 seconds.
+- - https://bingwallpaper.microsoft.com/win/en/bing/bing-wallpaper/
   
 ## Requirements
 - Install python latest version.
