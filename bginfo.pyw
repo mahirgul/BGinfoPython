@@ -18,6 +18,8 @@ try:
 
     # Use settings.json file vaules
     UPDATE_TIME = settings["APP"]["UPDATE_TIME"]
+    DOWNLOAD_BING = settings["APP"]["DOWNLOAD_BING"]
+    WALLPAPER_FOLDER = settings["APP"]["WALLPAPER_FOLDER"]
     
     WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
     WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
@@ -49,7 +51,56 @@ try:
     print(f"UPDATE_TIME: {UPDATE_TIME}")
     
 except Exception as e:
-        print(f"Error settings: {e}")    
+        print(f"Error settings: {e}")
+        
+import requests
+import os
+
+def download_bing_wallpaper():
+    save_folder = WALLPAPER_FOLDER
+    """
+    Downloads Bing's daily wallpaper.
+    Skips downloading if the file already exists.
+
+    :param save_folder: The folder where images will be saved.
+    """
+    os.makedirs(save_folder, exist_ok=True)
+
+    # Fetch JSON data from Bing API
+    bing_api = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
+    response = requests.get(bing_api)
+    
+    if response.status_code != 200:
+        print("Failed to access Bing API.")
+        return
+    
+    data = response.json()
+    
+    # Extract image details
+    image = data["images"][0]
+    image_url = "https://www.bing.com" + image["url"]
+    image_date = image["fullstartdate"]  # Example: "20240317"
+
+    # Create the file name
+    file_name = f"{image_date}.jpg"
+    file_path = os.path.join(save_folder, file_name)
+
+    # Check if the file already exists
+    if os.path.exists(file_path):
+        print(f"Image already exists: {file_name}")
+        return file_name
+
+    # Download and save the image
+    image_response = requests.get(image_url)
+    if image_response.status_code == 200:
+        with open(file_path, "wb") as file:
+            file.write(image_response.content)
+        print(f"New wallpaper downloaded: {file_name}")
+        return file_name
+    else:
+        print("Failed to download the image.")
+        return ""
+        
 
 def get_wallpaper_path():
     try:        
@@ -219,12 +270,12 @@ def backup_wallpaper(wallpaper_path):
         # Specify the path of the folder containing images
         image_folder = os.path.dirname(wallpaper_path)
         image_filename = os.path.basename(wallpaper_path)
-        backup_folder = os.path.join(image_folder, "backup/")
+        backup_folder = os.path.join(image_folder, "backup\\")
 
         os.makedirs(backup_folder, exist_ok=True)  # Ensure the backup folder exists
         
         # Create the backup file path
-        backup_file_path = os.path.join(backup_folder, f"{image_filename}.backup.jpg")    
+        backup_file_path = os.path.join(backup_folder, f"{image_filename}")    
 
         # Check if a backup file exists
         if os.path.exists(backup_file_path):
@@ -281,12 +332,24 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
         print(f"Error add_weather_icon: {e}")
         
 def update_wallpaper():   
-    try:   
-        wallpaper_path = get_wallpaper_path()
-        image_folder = os.path.dirname(wallpaper_path)
+    try:
+        wallpaper_path = ""
+        image_folder = ""        
+        backup_file_path = ""
         
-        backup_file_path = backup_wallpaper(wallpaper_path)    
-
+        if(DOWNLOAD_BING):
+            bing_image = download_bing_wallpaper()
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, bing_image)
+            image_folder = os.path.dirname(wallpaper_path)        
+            backup_file_path = backup_wallpaper(wallpaper_path)            
+        else:
+            wallpaper_path = get_wallpaper_path()            
+            image_folder = os.path.dirname(wallpaper_path)        
+            backup_file_path = backup_wallpaper(wallpaper_path)    
+        
+        print(wallpaper_path)
+        print(image_folder)
+        print(backup_file_path)
         # Load and process the image
         image = Image.open(backup_file_path)
 

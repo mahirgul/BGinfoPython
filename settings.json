@@ -1,6 +1,8 @@
 {
 	"APP": {
-        "UPDATE_TIME": "10"        
+        "UPDATE_TIME": "10",
+        "DOWNLOAD_BING": true,
+        "WALLPAPER_FOLDER": "wallpaper"
     },
     "WEATHER": {
         "WEATHER_API_KEY": "your_keys",
