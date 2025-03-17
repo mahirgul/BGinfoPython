@@ -196,7 +196,7 @@ def get_cpu_infos(table_data):
             physical_cores = psutil.cpu_count(logical=False)
             cpu_frequency = psutil.cpu_freq()
 
-            # Frekansı okunabilir hale getir
+            # Make the frequency readable
             cpu_freq_str = f"{cpu_frequency.current:.2f} MHz"
 
             table_data.append(("CPU Cores :", f"{logical_cores} L / {physical_cores} P"))
@@ -210,19 +210,19 @@ def get_ram_infos(table_data):
             table_data.append(("", ""))
 
             virtual_memory = psutil.virtual_memory()
-            print("RAM Bilgileri:")
-            print(f"  Toplam Bellek: {virtual_memory.total / (1024 ** 3):.2f} GB")
-            print(f"  Kullanılabilir Bellek: {virtual_memory.available / (1024 ** 3):.2f} GB")
-            print(f"  Kullanılan Bellek: {virtual_memory.used / (1024 ** 3):.2f} GB")
-            print(f"  Boş Bellek: {virtual_memory.free / (1024 ** 3):.2f} GB")
-            print(f"  Bellek Kullanım Yüzdesi: {virtual_memory.percent}%")
+            print("RAM Information:")
+            print(f"  Total Memory: {virtual_memory.total / (1024 ** 3):.2f} GB")
+            print(f"  Available Memory: {virtual_memory.available / (1024 ** 3):.2f} GB")
+            print(f"  Used Memory: {virtual_memory.used / (1024 ** 3):.2f} GB")
+            print(f"  Free Memory: {virtual_memory.free / (1024 ** 3):.2f} GB")
+            print(f"  Memory Usage Percentage: {virtual_memory.percent}%")
             
             # swap_memory = psutil.swap_memory()
-            # print("\nSwap Bellek Bilgileri:")
-            # print(f"  Toplam Swap: {swap_memory.total / (1024 ** 3):.2f} GB")
-            # print(f"  Kullanılan Swap: {swap_memory.used / (1024 ** 3):.2f} GB")
-            # print(f"  Boş Swap: {swap_memory.free / (1024 ** 3):.2f} GB")
-            # print(f"  Swap Kullanım Yüzdesi: {swap_memory.percent}%")
+            # print("\nSwap Memory Information:")
+            # print(f"  Total Swap: {swap_memory.total / (1024 ** 3):.2f} GB")
+            # print(f"  Used Swap: {swap_memory.used / (1024 ** 3):.2f} GB")
+            # print(f"  Free Swap: {swap_memory.free / (1024 ** 3):.2f} GB")
+            # print(f"  Swap Usage Percentage: {swap_memory.percent}%")
             
             table_data.append(("Total Ram :", f"{virtual_memory.total / (1024 ** 3):.2f} GB"))
             table_data.append(("Used Ram :", f"{virtual_memory.used / (1024 ** 3):.2f} GB"))
@@ -391,7 +391,7 @@ def update_wallpaper():
             table_height + 10 + (50 if weather_icon_code else 0)  # Add extra space for the icon
         )
 
-        # Siyah arka plan rengi, saydamlıkla birlikte
+        # Black background color with transparency
         background_color = (0, 0, 0, background_opacity)
 
         # Draw the background with transparency
@@ -404,8 +404,8 @@ def update_wallpaper():
         # Add table text to the top-right corner
         table_y_offset = table_background_rect[1] + table_padding
         for data_name, data_value in table_data:
-            table_text_left = str(data_name)  # iface_name'i string'e çevir
-            table_text_right = str(data_value)  # iface_ip'i string'e çevir
+            table_text_left = str(data_name)  # Convert iface_name to string
+            table_text_right = str(data_value)  # Convert iface_ip to string
 
             draw = ImageDraw.Draw(image)
             draw.text((table_background_rect[0] + table_padding, table_y_offset), table_text_left, font=font, fill="white")
