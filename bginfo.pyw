@@ -78,7 +78,7 @@ def download_bing_wallpaper():
     
     # Extract image details
     image = data["images"][0]
-    image_url = "https://www.bing.com" + image["url"]
+    image_url = "https://www.bing.com" + image["urlbase"] + "_UHD.jpg"
     image_date = image["fullstartdate"]  # Example: "20240317"
 
     # Create the file name
