@@ -58,28 +58,24 @@ import os
 
 def download_bing_wallpaper():
     save_folder = WALLPAPER_FOLDER
-    """
-    Downloads Bing's daily wallpaper.
-    Skips downloading if the file already exists.
-
-    :param save_folder: The folder where images will be saved.
-    """
     os.makedirs(save_folder, exist_ok=True)
 
     # Fetch JSON data from Bing API
     bing_api = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
     response = requests.get(bing_api)
-    
+
     if response.status_code != 200:
         print("Failed to access Bing API.")
         return
-    
+
     data = response.json()
-    
+
     # Extract image details
     image = data["images"][0]
     image_url = "https://www.bing.com" + image["urlbase"] + "_UHD.jpg"
     image_date = image["fullstartdate"]  # Example: "20240317"
+    copyright_info = image["copyright"]  # e.g., "Image by XYZ"
+    title_info = image["title"]  # e.g., "A Beautiful Landscape"
 
     # Create the file name
     file_name = f"{image_date}.jpg"
@@ -93,9 +89,48 @@ def download_bing_wallpaper():
     # Download and save the image
     image_response = requests.get(image_url)
     if image_response.status_code == 200:
-        with open(file_path, "wb") as file:
-            file.write(image_response.content)
-        print(f"New wallpaper downloaded: {file_name}")
+        # Open the image using Pillow
+        img = Image.open(BytesIO(image_response.content))
+
+        # Initialize ImageDraw
+        draw = ImageDraw.Draw(img)
+
+        # Define the font and text color
+        try:
+            font_size = 40
+            font = ImageFont.truetype("verdana.ttf", font_size)
+        except IOError:
+            font = ImageFont.load_default()
+            font_size = font.size + 10  # Adjust as needed
+
+        shadow_color = (0, 0, 0)  # Black color text
+        text_color = (255, 255, 255) # White shadow color
+        shadow_offset = 3 # Offset for the shadow
+
+        margin = 100
+        title_position = (margin, img.height - 200)
+        copyright_position = (margin, img.height - 150)
+
+        # Function to draw text with shadow
+        def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset):
+            # Draw shadow
+            draw.text((position[0] + shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
+            draw.text((position[0] - shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
+            draw.text((position[0] + shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
+            draw.text((position[0] - shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
+            
+            # Draw main text
+            draw.text(position, text, font=font, fill=text_color)
+
+        # Add title with shadow
+        draw_text_with_shadow(draw, title_position, title_info, font, text_color, shadow_color, shadow_offset)
+
+        # Add copyright info with shadow
+        draw_text_with_shadow(draw, copyright_position, copyright_info, font, text_color, shadow_color, shadow_offset)
+
+        # Save the modified image
+        img.save(file_path)
+        print(f"New wallpaper downloaded with title and copyright (with shadow): {file_name}")
         return file_name
     else:
         print("Failed to download the image.")
