@@ -12,7 +12,6 @@ import winreg
 import json
 import random
 
-
 try:
     # settings.json file loading
     with open("settings.json", "r") as file:
@@ -27,6 +26,10 @@ try:
     DOWNLOAD_PIXABAY_API = settings["APP"]["DOWNLOAD_PIXABAY_API"]
     DOWNLOAD_PIXABAY_CAT = settings["APP"]["DOWNLOAD_PIXABAY_CAT"]
     WALLPAPER_FOLDER = settings["APP"]["WALLPAPER_FOLDER"]
+    WALLPAPER_FONT = settings["APP"]["WALLPAPER_FONT"]
+    WALLPAPER_FONT_SIZE = settings["APP"]["WALLPAPER_FONT_SIZE"]
+    WALLPAPER_FONT_FCOLOR = tuple(settings["APP"]["WALLPAPER_FONT_FCOLOR"])
+    WALLPAPER_FONT_BCOLOR = tuple(settings["APP"]["WALLPAPER_FONT_BCOLOR"])
     
     WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
     WEATHER_CITY = settings["WEATHER"]["WEATHER_CITY"]
@@ -60,15 +63,73 @@ try:
 except Exception as e:
         print(f"Error settings: {e}")
 
+def process_and_save_image(image_url, output_filename, title=None, content=None, target_width=3840, target_height=2160, blur_radius=30, font_path=WALLPAPER_FONT, font_size=WALLPAPER_FONT_SIZE, text_color=WALLPAPER_FONT_FCOLOR, shadow_color=WALLPAPER_FONT_BCOLOR, shadow_offset=3, margin=100):
+    print("process_and_save_image")
+    print(f"image_url: {image_url}")
+    print(f"output_filename: {output_filename}")
+    print(f"title: {title}")
+    print(f"content: {content}")
+    
+    os.makedirs(WALLPAPER_FOLDER, exist_ok=True)
+    try:
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+        image_content = response.content
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading image from {image_url}: {e}")
+        return False
+
+    try:
+        # Resize and create background
+        image = Image.open(BytesIO(image_content)).convert("RGB")
+        img_width, img_height = image.size
+        ratio = min(target_width / img_width, target_height / img_height)
+        new_size = (int(img_width * ratio), int(img_height * ratio))
+        img_resized = image.resize(new_size, Image.LANCZOS)
+        background = image.resize((target_width, target_height), Image.LANCZOS).filter(ImageFilter.GaussianBlur(blur_radius))
+        offset_x = (target_width - new_size[0]) // 2
+        offset_y = (target_height - new_size[1]) // 2
+        background.paste(img_resized, (offset_x, offset_y))
+        image = background
+
+        # Add text
+        if title or content:
+            draw = ImageDraw.Draw(image)
+            try:
+                font = ImageFont.truetype(font_path, font_size)
+            except IOError:
+                font = ImageFont.load_default()
+
+            def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset):
+                # Draw shadow
+                draw.text((position[0] + shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
+                draw.text((position[0] - shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
+                draw.text((position[0] + shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
+                draw.text((position[0] - shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
+                # Draw main text
+                draw.text(position, text, font=font, fill=text_color)
+
+            if title:
+                title_position = (margin, image.height - 200)
+                draw_text_with_shadow(draw, title_position, title, font, text_color, shadow_color, shadow_offset)
+
+            if content:
+                content_position = (margin, image.height - 150)
+                draw_text_with_shadow(draw, content_position, content, font, text_color, shadow_color, shadow_offset)
+
+        # Save the processed image
+        image.save(os.path.join(WALLPAPER_FOLDER, output_filename))
+        print(f"Processed and saved: {output_filename}")
+        return output_filename
+
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return ""
 
 def download_pixabay_image():
-    save_folder = WALLPAPER_FOLDER
-    os.makedirs(save_folder, exist_ok=True)
-
     # Fetch JSON data from Pixabay API
     pixabay_api = f"https://pixabay.com/api/?key={DOWNLOAD_PIXABAY_API}&per_page=50&safesearch=true&orientation=horizontal&q={DOWNLOAD_PIXABAY_CAT}"
-    response = requests.get(pixabay_api).json()
-    
+    response = requests.get(pixabay_api).json()    
     if not response.get("hits"):
         print("No images found.")
         return ""
@@ -76,134 +137,35 @@ def download_pixabay_image():
     # Select a random image
     image_data = random.choice(response["hits"])
     image_url = image_data.get("largeImageURL")
+    title = image_data.get("user")
+    content = image_data.get("tags")
+    
     file_name = f"{image_data.get('id')}.jpg"
-    file_path = os.path.join(save_folder, file_name)
+    return process_and_save_image(image_url, file_name, title, content)
 
-    if os.path.exists(file_path):
-        print(f"Image already exists: {file_name}")
-        return file_name
-
-    # Download image
-    image_response = requests.get(image_url)
-    if image_response.status_code != 200:
-        print("Failed to download the image.")
-        return ""
-
-    img = Image.open(BytesIO(image_response.content))
-    img = img.convert("RGB")  # RGBA'dan RGB'ye dönüştür
-
-
-    # Target resolution (4K)
-    target_width, target_height = 3840, 2160
-    img_width, img_height = img.size
-
-    # Resize while keeping aspect ratio
-    ratio = min(target_width / img_width, target_height / img_height)
-    new_size = (int(img_width * ratio), int(img_height * ratio))
-    img_resized = img.resize(new_size, Image.LANCZOS)
-
-    # Create blurred background
-    background = img.resize((target_width, target_height), Image.LANCZOS).filter(ImageFilter.GaussianBlur(30))
-
-    # Center the resized image on the blurred background
-    offset_x = (target_width - new_size[0]) // 2
-    offset_y = (target_height - new_size[1]) // 2
-    background.paste(img_resized, (offset_x, offset_y))
-
-    # Save final image
-    background.save(file_path, "JPEG", quality=95)
-    print(f"New wallpaper downloaded: {file_name}")
-    return file_name
-
-
-def download_bing_wallpaper():
-    save_folder = WALLPAPER_FOLDER
-   
-    os.makedirs(save_folder, exist_ok=True)
-
+def download_bing_wallpaper():   
     # Fetch JSON data from Bing API
     bing_api = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
     response = requests.get(bing_api)
-
     if response.status_code != 200:
         print("Failed to access Bing API.")
-        return
+        return ""
 
     data = response.json()
 
     # Extract image details
     image = data["images"][0]
     image_url = "https://www.bing.com" + image["urlbase"] + "_UHD.jpg"
-    image_date = image["fullstartdate"]  # Example: "20240317"
-    copyright_info = image["copyright"]  # e.g., "Image by XYZ"
-    title_info = image["title"]  # e.g., "A Beautiful Landscape"
+    image_date = image["fullstartdate"]  # Example: "20240317"    
+    title = image["title"]  # e.g., "A Beautiful Landscape"
+    content = image["copyright"]  # e.g., "Image by XYZ"
 
     # Create the file name
     file_name = f"{image_date}.jpg"
-    file_path = os.path.join(save_folder, file_name)
-
-    # Check if the file already exists
-    if os.path.exists(file_path):
-        print(f"Image already exists: {file_name}")
-        return file_name
-
-    # Download and save the image
-    image_response = requests.get(image_url)
-    if image_response.status_code == 200:
-        # Open the image using Pillow
-        img = Image.open(BytesIO(image_response.content))
-
-        # Initialize ImageDraw
-        draw = ImageDraw.Draw(img)
-
-        # Define the font and text color
-        try:
-            font_size = 30
-            font = ImageFont.truetype("verdana.ttf", font_size)
-        except IOError:
-            font = ImageFont.load_default()
-            font_size = font.size + 10  # Adjust as needed
-
-        shadow_color = (0, 0, 0)  # Black color text
-        text_color = (255, 255, 255) # White shadow color
-        shadow_offset = 3 # Offset for the shadow
-
-        margin = 100
-        title_position = (margin, img.height - 200)
-        copyright_position = (margin, img.height - 150)
-
-        # Function to draw text with shadow
-        def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset):
-            # Draw shadow
-            draw.text((position[0] + shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
-            draw.text((position[0] - shadow_offset, position[1] + shadow_offset), text, font=font, fill=shadow_color)
-            draw.text((position[0] + shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
-            draw.text((position[0] - shadow_offset, position[1] - shadow_offset), text, font=font, fill=shadow_color)
-            
-            # Draw main text
-            draw.text(position, text, font=font, fill=text_color)
-
-        # Add title with shadow
-        draw_text_with_shadow(draw, title_position, title_info, font, text_color, shadow_color, shadow_offset)
-
-        # Add copyright info with shadow
-        draw_text_with_shadow(draw, copyright_position, copyright_info, font, text_color, shadow_color, shadow_offset)
-
-        # Save the modified image
-        img.save(file_path)
-        print(f"New wallpaper downloaded with title and copyright (with shadow): {file_name}")
-        return file_name
-    else:
-        print("Failed to download the image.")
-        return ""
-        
+    return process_and_save_image(image_url, file_name, title, content)        
 
 
 def download_nasa_apod():
-    save_folder = WALLPAPER_FOLDER
-    
-    os.makedirs(save_folder, exist_ok=True)
-
     # Fetch JSON data from NASA API
     nasa_api = f"https://api.nasa.gov/planetary/apod?api_key={DOWNLOAD_NASA_API}&hd=True"
     response = requests.get(nasa_api).json()
@@ -211,108 +173,12 @@ def download_nasa_apod():
     # Extract image details
     image_url = response.get("hdurl")
     image_date = response.get("date")  # Example: "20240317"
-    copyright_info = response.get("explanation")  # e.g., "Image by XYZ"
-    title_info = response.get("title")  # e.g., "A Beautiful Landscape"
+    content = response.get("explanation")  # e.g., "Image by XYZ"
+    title = response.get("title")  # e.g., "A Beautiful Landscape"
 
     # Create the file name
     file_name = f"{image_date}.jpg"
-    file_path = os.path.join(save_folder, file_name)
-
-    # Check if the file already exists
-    if os.path.exists(file_path):
-        print(f"Image already exists: {file_name}")
-        return file_name
-
-    # Download and save the image
-    image_response = requests.get(image_url)
-    if image_response.status_code == 200:
-        # Open the image using Pillow
-        img = Image.open(BytesIO(image_response.content))
-
-        # Check image size and crop if necessary
-        target_width, target_height = 3840, 2160  # 4K resolution
-        img_width, img_height = img.size
-        
-        if img_width > target_width and img_height > target_height:
-            left = (img_width - target_width) // 2
-            top = (img_height - target_height) // 2
-            right = left + target_width
-            bottom = top + target_height
-            img = img.crop((left, top, right, bottom))
-            print("Image cropped to 4K resolution.")
-
-        # Initialize ImageDraw
-        draw = ImageDraw.Draw(img)
-
-        # Define the font and text color
-        try:
-            font_size = 30
-            font = ImageFont.truetype("verdana.ttf", font_size)
-        except IOError:
-            font = ImageFont.load_default()
-            font_size = font.size + 10  # Adjust as needed
-
-        shadow_color = (0, 0, 0)  # Black shadow color
-        text_color = (255, 255, 255)  # White text color
-        shadow_offset = 3  # Offset for the shadow
-
-        margin = 100
-        title_position = (margin, img.height - 300)
-        copyright_position = (margin, img.height - 250)
-
-        # Function to wrap text
-        def wrap_text(text, font, max_width):
-            lines = []
-            words = text.split()
-            current_line = ""
-            
-            for word in words:
-                test_line = f"{current_line} {word}".strip()
-                text_width = font.getbbox(test_line)[2]  # Using getbbox for width
-                if text_width <= max_width:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word
-            
-            lines.append(current_line)
-            return lines
-
-        # Function to draw text with shadow
-        def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset, max_width):
-            lines = wrap_text(text, font, max_width)
-            y_offset = 0
-            
-            for line in lines:
-                shadow_positions = [
-                    (position[0] + shadow_offset, position[1] + y_offset + shadow_offset),
-                    (position[0] - shadow_offset, position[1] + y_offset + shadow_offset),
-                    (position[0] + shadow_offset, position[1] + y_offset - shadow_offset),
-                    (position[0] - shadow_offset, position[1] + y_offset - shadow_offset)
-                ]
-                
-                # Draw shadow
-                for shadow_pos in shadow_positions:
-                    draw.text(shadow_pos, line, font=font, fill=shadow_color)
-                
-                # Draw main text
-                draw.text((position[0], position[1] + y_offset), line, font=font, fill=text_color)
-                y_offset += font.size + 5  # Adjust line height as needed
-
-        # Add title with shadow
-        draw_text_with_shadow(draw, title_position, title_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
-
-        # Add copyright info with shadow
-        draw_text_with_shadow(draw, copyright_position, copyright_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
-
-        # Save the modified image
-        img.save(file_path)
-        print(f"New wallpaper downloaded with title and copyright (with shadow): {file_name}")
-        return file_name
-    else:
-        print("Failed to download the image.")
-        return ""
-
+    return process_and_save_image(image_url, file_name, title, content)
 
 def get_wallpaper_path():
     try:        
@@ -324,7 +190,6 @@ def get_wallpaper_path():
     except Exception as e:
         print(f"Error: {e}")
         return None
-
 
 def get_weather(table_data):
     try:
@@ -387,7 +252,6 @@ def get_weather_icon(icon_code):
         print(f"Error fetching weather icon: {e}")    
         return None
 
-
 def get_pc_info(table_data):
     try:
         if INFO_USER:
@@ -399,7 +263,6 @@ def get_pc_info(table_data):
             table_data.append(("Host :", hostname))     
     except Exception as e:
         print(f"Error get_pc_info: {e}")
-
 
 def get_cpu_infos(table_data):
     try:
@@ -417,7 +280,6 @@ def get_cpu_infos(table_data):
             table_data.append(("CPU Freq :", cpu_freq_str))
     except Exception as e:
         print(f"Error get_cpu_infos: {e}")
-
 
 def get_ram_infos(table_data):
     try:
@@ -445,7 +307,6 @@ def get_ram_infos(table_data):
     except Exception as e:
         print(f"Error get_ram_infos: {e}")
 
-
 def get_network_infos(table_data):
     try:
         if INFO_LANS:
@@ -467,7 +328,6 @@ def get_network_infos(table_data):
     except Exception as e:
         print(f"Error get_network_infos: {e}")
 
-
 def get_date_time(table_data):    
     try:
         if INFO_TIME:
@@ -488,7 +348,7 @@ def backup_wallpaper(wallpaper_path):
         # Specify the path of the folder containing images
         image_folder = os.path.dirname(wallpaper_path)
         image_filename = os.path.basename(wallpaper_path)
-        backup_folder = os.path.join(image_folder, "backup\\")
+        backup_folder = os.path.join(image_folder, "backup")
 
         os.makedirs(backup_folder, exist_ok=True)  # Ensure the backup folder exists
         
@@ -509,7 +369,6 @@ def backup_wallpaper(wallpaper_path):
     except Exception as e:
         print(f"Error backup_wallpaper: {e}")
         return None
-
 
 def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offset):
     try:
@@ -550,33 +409,33 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
     except Exception as e:
         print(f"Error add_weather_icon: {e}")
 
-
 def update_wallpaper():   
     try:
         wallpaper_path = ""
         image_folder = ""        
         backup_file_path = ""
-        
+        image_name = ""
         if(DOWNLOAD_BING):
-            bing_image = download_bing_wallpaper()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, bing_image)
+            image_name = download_bing_wallpaper()
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
             image_folder = os.path.dirname(wallpaper_path)        
             backup_file_path = backup_wallpaper(wallpaper_path)
         elif(DOWNLOAD_NASA):
-            nasa_image = download_nasa_apod()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, nasa_image)
+            image_name = download_nasa_apod()
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
             image_folder = os.path.dirname(wallpaper_path)        
             backup_file_path = backup_wallpaper(wallpaper_path)
         elif(DOWNLOAD_PIXABAY):
-            pixabay_image = download_pixabay_image()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, pixabay_image)
+            image_name = download_pixabay_image()
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
             image_folder = os.path.dirname(wallpaper_path)        
             backup_file_path = backup_wallpaper(wallpaper_path)  
         else:
             wallpaper_path = get_wallpaper_path()            
             image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)    
-        
+            backup_file_path = backup_wallpaper(wallpaper_path)
+            
+        print(image_name)
         print(wallpaper_path)
         print(image_folder)
         print(backup_file_path)
@@ -662,7 +521,6 @@ def update_wallpaper():
         print("New wallpaper set as the desktop background.")
     except Exception as e:
         print(f"Error update_wallpaper: {e}")
-
 
 # Run the update process in a loop
 while True:
