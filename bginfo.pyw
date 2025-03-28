@@ -19,6 +19,8 @@ try:
     # Use settings.json file vaules
     UPDATE_TIME = settings["APP"]["UPDATE_TIME"]
     DOWNLOAD_BING = settings["APP"]["DOWNLOAD_BING"]
+    DOWNLOAD_NASA = settings["APP"]["DOWNLOAD_NASA"]
+    DOWNLOAD_NASA_API = settings["APP"]["DOWNLOAD_NASA_API"]
     WALLPAPER_FOLDER = settings["APP"]["WALLPAPER_FOLDER"]
     
     WEATHER_API_KEY = settings["WEATHER"]["WEATHER_API_KEY"]
@@ -56,8 +58,14 @@ except Exception as e:
 import requests
 import os
 
+import os
+import requests
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+
 def download_bing_wallpaper():
     save_folder = WALLPAPER_FOLDER
+   
     os.makedirs(save_folder, exist_ok=True)
 
     # Fetch JSON data from Bing API
@@ -97,7 +105,7 @@ def download_bing_wallpaper():
 
         # Define the font and text color
         try:
-            font_size = 40
+            font_size = 30
             font = ImageFont.truetype("verdana.ttf", font_size)
         except IOError:
             font = ImageFont.load_default()
@@ -136,6 +144,121 @@ def download_bing_wallpaper():
         print("Failed to download the image.")
         return ""
         
+
+def download_nasa_apod():
+    save_folder = WALLPAPER_FOLDER
+    
+    os.makedirs(save_folder, exist_ok=True)
+
+    # Fetch JSON data from NASA API
+    nasa_api = f"https://api.nasa.gov/planetary/apod?api_key={DOWNLOAD_NASA_API}&hd=True"
+    response = requests.get(nasa_api).json()
+    
+    # Extract image details
+    image_url = response.get("hdurl")
+    image_date = response.get("date")  # Example: "20240317"
+    copyright_info = response.get("explanation")  # e.g., "Image by XYZ"
+    title_info = response.get("title")  # e.g., "A Beautiful Landscape"
+
+    # Create the file name
+    file_name = f"{image_date}.jpg"
+    file_path = os.path.join(save_folder, file_name)
+
+    # Check if the file already exists
+    if os.path.exists(file_path):
+        print(f"Image already exists: {file_name}")
+        return file_name
+
+    # Download and save the image
+    image_response = requests.get(image_url)
+    if image_response.status_code == 200:
+        # Open the image using Pillow
+        img = Image.open(BytesIO(image_response.content))
+
+        # Check image size and crop if necessary
+        target_width, target_height = 3840, 2160  # 4K resolution
+        img_width, img_height = img.size
+        
+        if img_width > target_width and img_height > target_height:
+            left = (img_width - target_width) // 2
+            top = (img_height - target_height) // 2
+            right = left + target_width
+            bottom = top + target_height
+            img = img.crop((left, top, right, bottom))
+            print("Image cropped to 4K resolution.")
+
+        # Initialize ImageDraw
+        draw = ImageDraw.Draw(img)
+
+        # Define the font and text color
+        try:
+            font_size = 30
+            font = ImageFont.truetype("verdana.ttf", font_size)
+        except IOError:
+            font = ImageFont.load_default()
+            font_size = font.size + 10  # Adjust as needed
+
+        shadow_color = (0, 0, 0)  # Black shadow color
+        text_color = (255, 255, 255)  # White text color
+        shadow_offset = 3  # Offset for the shadow
+
+        margin = 100
+        title_position = (margin, img.height - 300)
+        copyright_position = (margin, img.height - 250)
+
+        # Function to wrap text
+        def wrap_text(text, font, max_width):
+            lines = []
+            words = text.split()
+            current_line = ""
+            
+            for word in words:
+                test_line = f"{current_line} {word}".strip()
+                text_width = font.getbbox(test_line)[2]  # Using getbbox for width
+                if text_width <= max_width:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word
+            
+            lines.append(current_line)
+            return lines
+
+        # Function to draw text with shadow
+        def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset, max_width):
+            lines = wrap_text(text, font, max_width)
+            y_offset = 0
+            
+            for line in lines:
+                shadow_positions = [
+                    (position[0] + shadow_offset, position[1] + y_offset + shadow_offset),
+                    (position[0] - shadow_offset, position[1] + y_offset + shadow_offset),
+                    (position[0] + shadow_offset, position[1] + y_offset - shadow_offset),
+                    (position[0] - shadow_offset, position[1] + y_offset - shadow_offset)
+                ]
+                
+                # Draw shadow
+                for shadow_pos in shadow_positions:
+                    draw.text(shadow_pos, line, font=font, fill=shadow_color)
+                
+                # Draw main text
+                draw.text((position[0], position[1] + y_offset), line, font=font, fill=text_color)
+                y_offset += font.size + 5  # Adjust line height as needed
+
+        # Add title with shadow
+        draw_text_with_shadow(draw, title_position, title_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
+
+        # Add copyright info with shadow
+        draw_text_with_shadow(draw, copyright_position, copyright_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
+
+        # Save the modified image
+        img.save(file_path)
+        print(f"New wallpaper downloaded with title and copyright (with shadow): {file_name}")
+        return file_name
+    else:
+        print("Failed to download the image.")
+        return ""
+
 
 def get_wallpaper_path():
     try:        
@@ -376,7 +499,12 @@ def update_wallpaper():
             bing_image = download_bing_wallpaper()
             wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, bing_image)
             image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)            
+            backup_file_path = backup_wallpaper(wallpaper_path)
+        elif(DOWNLOAD_NASA):
+            bing_image = download_nasa_apod()
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, bing_image)
+            image_folder = os.path.dirname(wallpaper_path)        
+            backup_file_path = backup_wallpaper(wallpaper_path)  
         else:
             wallpaper_path = get_wallpaper_path()            
             image_folder = os.path.dirname(wallpaper_path)        
