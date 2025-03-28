@@ -7,7 +7,11 @@
 	"DOWNLOAD_PIXABAY": false,
         "DOWNLOAD_PIXABAY_API": "your_keys",
         "DOWNLOAD_PIXABAY_CAT": "space",
-        "WALLPAPER_FOLDER": "wallpaper"
+        "WALLPAPER_FOLDER": "wallpaper",
+	"WALLPAPER_FONT": "verdana.ttf",
+        "WALLPAPER_FONT_SIZE": 30,
+        "WALLPAPER_FONT_FCOLOR": [255, 255, 255],
+        "WALLPAPER_FONT_BCOLOR": [0, 0, 0]
     },
     "WEATHER": {
         "WEATHER_API_KEY": "your_keys",
