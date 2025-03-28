@@ -1,8 +1,8 @@
 {
 	"APP": {
         "UPDATE_TIME": "10",
-        "DOWNLOAD_BING": false,
-	"DOWNLOAD_NASA": true,
+        "DOWNLOAD_BING": true,
+	"DOWNLOAD_NASA": false,
         "DOWNLOAD_NASA_API": "your_keys",
 	"DOWNLOAD_PIXABAY": false,
         "DOWNLOAD_PIXABAY_API": "your_keys",
