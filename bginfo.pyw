@@ -10,6 +10,8 @@ from io import BytesIO
 import time
 import winreg
 import json
+import random
+
 
 
 try:
@@ -63,122 +65,57 @@ except Exception as e:
 
 def download_pixabay_image():
     save_folder = WALLPAPER_FOLDER
-    
     os.makedirs(save_folder, exist_ok=True)
 
     # Fetch JSON data from Pixabay API
-    pixabay_api = f"https://pixabay.com/api/?key={DOWNLOAD_PIXABAY_API}&safesearch=true&orientation=horizontal&category={DOWNLOAD_PIXABAY_CAT}"
-    print (pixabay_api)
+    pixabay_api = f"https://pixabay.com/api/?key={DOWNLOAD_PIXABAY_API}&per_page=50&safesearch=true&orientation=horizontal&q={DOWNLOAD_PIXABAY_CAT}"
     response = requests.get(pixabay_api).json()
     
-    # Extract image details
-    image_url = response['hits'][0].get("largeImageURL")  # You can adjust this index to choose different images
-    image_date = response['hits'][0].get("id")  # Use creation date for the file name
-    title_info = response['hits'][0].get("user")  # e.g., "Nature, Landscape"
-    copyright_info = response['hits'][0].get("tags")  # e.g., "Photo by XYZ"
+    if not response.get("hits"):
+        print("No images found.")
+        return ""
 
-    # Create the file name
-    file_name = f"{image_date}.jpg"
+    # Select a random image
+    image_data = random.choice(response["hits"])
+    image_url = image_data.get("largeImageURL")
+    file_name = f"{image_data.get('id')}.jpg"
     file_path = os.path.join(save_folder, file_name)
 
-    # Check if the file already exists
     if os.path.exists(file_path):
         print(f"Image already exists: {file_name}")
         return file_name
 
-    # Download and save the image
+    # Download image
     image_response = requests.get(image_url)
-    if image_response.status_code == 200:
-        # Open the image using Pillow
-        img = Image.open(BytesIO(image_response.content))
-
-        # Check image size and crop if necessary
-        target_width, target_height = 3840, 2160  # 4K resolution
-        img_width, img_height = img.size
-        
-        if img_width > target_width and img_height > target_height:
-            left = (img_width - target_width) // 2
-            top = (img_height - target_height) // 2
-            right = left + target_width
-            bottom = top + target_height
-            img = img.crop((left, top, right, bottom))
-            print("Image cropped to 4K resolution.")
-            
-        if img_width < target_width or img_height < target_height:
-            img = img.resize((target_width, target_height), Image.LANCZOS)
-            print(f"Image upscaled to 4K resolution: {target_width}x{target_height}")
-
-        # Initialize ImageDraw
-        draw = ImageDraw.Draw(img)
-
-        # Define the font and text color
-        try:
-            font_size = 30
-            font = ImageFont.truetype("verdana.ttf", font_size)
-        except IOError:
-            font = ImageFont.load_default()
-            font_size = font.size + 10  # Adjust as needed
-
-        shadow_color = (0, 0, 0)  # Black shadow color
-        text_color = (255, 255, 255)  # White text color
-        shadow_offset = 3  # Offset for the shadow
-
-        margin = 100
-        title_position = (margin, img.height - 300)
-        copyright_position = (margin, img.height - 250)
-
-        # Function to wrap text
-        def wrap_text(text, font, max_width):
-            lines = []
-            words = text.split()
-            current_line = ""
-            
-            for word in words:
-                test_line = f"{current_line} {word}".strip()
-                text_width = font.getbbox(test_line)[2]  # Using getbbox for width
-                if text_width <= max_width:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word
-            
-            lines.append(current_line)
-            return lines
-
-        # Function to draw text with shadow
-        def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, shadow_offset, max_width):
-            lines = wrap_text(text, font, max_width)
-            y_offset = 0
-            
-            for line in lines:
-                shadow_positions = [
-                    (position[0] + shadow_offset, position[1] + y_offset + shadow_offset),
-                    (position[0] - shadow_offset, position[1] + y_offset + shadow_offset),
-                    (position[0] + shadow_offset, position[1] + y_offset - shadow_offset),
-                    (position[0] - shadow_offset, position[1] + y_offset - shadow_offset)
-                ]
-                
-                # Draw shadow
-                for shadow_pos in shadow_positions:
-                    draw.text(shadow_pos, line, font=font, fill=shadow_color)
-                
-                # Draw main text
-                draw.text((position[0], position[1] + y_offset), line, font=font, fill=text_color)
-                y_offset += font.size + 5  # Adjust line height as needed
-
-        # Add title with shadow
-        draw_text_with_shadow(draw, title_position, title_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
-
-        # Add copyright info with shadow
-        draw_text_with_shadow(draw, copyright_position, copyright_info, font, text_color, shadow_color, shadow_offset, img.width - 200)
-
-        # Save the modified image
-        img.save(file_path)
-        print(f"New wallpaper downloaded with title and copyright (with shadow): {file_name}")
-        return file_name
-    else:
+    if image_response.status_code != 200:
         print("Failed to download the image.")
         return ""
+
+    img = Image.open(BytesIO(image_response.content))
+    img = img.convert("RGB")  # RGBA'dan RGB'ye dönüştür
+
+
+    # Target resolution (4K)
+    target_width, target_height = 3840, 2160
+    img_width, img_height = img.size
+
+    # Resize while keeping aspect ratio
+    ratio = min(target_width / img_width, target_height / img_height)
+    new_size = (int(img_width * ratio), int(img_height * ratio))
+    img_resized = img.resize(new_size, Image.LANCZOS)
+
+    # Create blurred background
+    background = img.resize((target_width, target_height), Image.LANCZOS).filter(ImageFilter.GaussianBlur(30))
+
+    # Center the resized image on the blurred background
+    offset_x = (target_width - new_size[0]) // 2
+    offset_y = (target_height - new_size[1]) // 2
+    background.paste(img_resized, (offset_x, offset_y))
+
+    # Save final image
+    background.save(file_path, "JPEG", quality=95)
+    print(f"New wallpaper downloaded: {file_name}")
+    return file_name
 
 
 def download_bing_wallpaper():
@@ -638,6 +575,7 @@ def update_wallpaper():
         print(backup_file_path)
         # Load and process the image
         image = Image.open(backup_file_path)
+        image = image.convert("RGB")  # RGBA'dan RGB'ye dönüştür
 
         # Set the font for the text
         try:
