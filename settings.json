@@ -2,6 +2,8 @@
 	"APP": {
         "UPDATE_TIME": "10",
         "DOWNLOAD_BING": true,
+	"DOWNLOAD_NASA": true,
+        "DOWNLOAD_NASA_API": "your_keys",
         "WALLPAPER_FOLDER": "wallpaper"
     },
     "WEATHER": {
