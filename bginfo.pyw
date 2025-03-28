@@ -13,7 +13,6 @@ import json
 import random
 
 
-
 try:
     # settings.json file loading
     with open("settings.json", "r") as file:
@@ -60,7 +59,6 @@ try:
     
 except Exception as e:
         print(f"Error settings: {e}")
-        
 
 
 def download_pixabay_image():
@@ -200,6 +198,7 @@ def download_bing_wallpaper():
         return ""
         
 
+
 def download_nasa_apod():
     save_folder = WALLPAPER_FOLDER
     
@@ -325,8 +324,8 @@ def get_wallpaper_path():
     except Exception as e:
         print(f"Error: {e}")
         return None
-        
-# Function to fetch weather data
+
+
 def get_weather(table_data):
     try:
         url = f"http://api.openweathermap.org/data/2.5/weather?q={WEATHER_CITY}&units=metric&appid={WEATHER_API_KEY}&lang={WEATHER_LANG}"
@@ -387,7 +386,8 @@ def get_weather_icon(icon_code):
     except Exception as e:
         print(f"Error fetching weather icon: {e}")    
         return None
-    
+
+
 def get_pc_info(table_data):
     try:
         if INFO_USER:
@@ -399,7 +399,8 @@ def get_pc_info(table_data):
             table_data.append(("Host :", hostname))     
     except Exception as e:
         print(f"Error get_pc_info: {e}")
-    
+
+
 def get_cpu_infos(table_data):
     try:
         if INFO_CPU:
@@ -416,6 +417,7 @@ def get_cpu_infos(table_data):
             table_data.append(("CPU Freq :", cpu_freq_str))
     except Exception as e:
         print(f"Error get_cpu_infos: {e}")
+
 
 def get_ram_infos(table_data):
     try:
@@ -442,7 +444,8 @@ def get_ram_infos(table_data):
             table_data.append(("Used % :", f"{virtual_memory.percent}%"))
     except Exception as e:
         print(f"Error get_ram_infos: {e}")
-       
+
+
 def get_network_infos(table_data):
     try:
         if INFO_LANS:
@@ -463,7 +466,8 @@ def get_network_infos(table_data):
                         table_data.append((iface_name, iface_ip))
     except Exception as e:
         print(f"Error get_network_infos: {e}")
-                    
+
+
 def get_date_time(table_data):    
     try:
         if INFO_TIME:
@@ -477,7 +481,8 @@ def get_date_time(table_data):
             table_data.append(("Date :", today_date))
     except Exception as e:
         print(f"Error get_date_time: {e}")
-        
+
+
 def backup_wallpaper(wallpaper_path):
     try:
         # Specify the path of the folder containing images
@@ -504,7 +509,8 @@ def backup_wallpaper(wallpaper_path):
     except Exception as e:
         print(f"Error backup_wallpaper: {e}")
         return None
-    
+
+
 def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offset):
     try:
         if weather_icon_code:
@@ -543,7 +549,8 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
             image.paste(icon_image, (icon_x, icon_y), icon_image)
     except Exception as e:
         print(f"Error add_weather_icon: {e}")
-        
+
+
 def update_wallpaper():   
     try:
         wallpaper_path = ""
@@ -655,6 +662,7 @@ def update_wallpaper():
         print("New wallpaper set as the desktop background.")
     except Exception as e:
         print(f"Error update_wallpaper: {e}")
+
 
 # Run the update process in a loop
 while True:
