@@ -417,7 +417,6 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
 
 def update_wallpaper():   
     try:
-        global DOWNLOAD_BING
         wallpaper_path = ""
         image_folder = ""        
         backup_file_path = ""
@@ -425,32 +424,19 @@ def update_wallpaper():
         if DOWNLOAD_NASA:
             image_name = download_nasa_apod()
             if image_name == "bing":
-                print("NASA returned video link because of that i will use BING")
-                DOWNLOAD_BING = True
-                wallpaper_path = ""
-                image_folder = ""        
-                backup_file_path = ""
-                image_name = ""
-            else:
-                wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
-                image_folder = os.path.dirname(wallpaper_path)        
-                backup_file_path = backup_wallpaper(wallpaper_path)
-                
-        if DOWNLOAD_BING:
-            image_name = download_bing_wallpaper()
-            wallpaper_path = os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
-            image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)
-        
-        if DOWNLOAD_PIXABAY:
-            image_name = download_pixabay_image()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
-            image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)  
-        else:
+                image_name = download_bing_wallpaper()                
+        elif DOWNLOAD_BING:
+            image_name = download_bing_wallpaper()                    
+        elif DOWNLOAD_PIXABAY:
+            image_name = download_pixabay_image()            
+            
+        if image_name == "":
             wallpaper_path = get_wallpaper_path()            
-            image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)
+        else:
+            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
+        
+        image_folder = os.path.dirname(wallpaper_path)        
+        backup_file_path = backup_wallpaper(wallpaper_path)
             
         print(image_name)
         print(wallpaper_path)
