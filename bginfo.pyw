@@ -27,6 +27,11 @@ try:
     DOWNLOAD_PIXABAY = settings["APP"]["DOWNLOAD_PIXABAY"]
     DOWNLOAD_PIXABAY_API = settings["APP"]["DOWNLOAD_PIXABAY_API"]
     DOWNLOAD_PIXABAY_CAT = settings["APP"]["DOWNLOAD_PIXABAY_CAT"]
+    
+    DOWNLOAD_PEXELS = settings["APP"]["DOWNLOAD_PEXELS"]
+    DOWNLOAD_PEXELS_API = settings["APP"]["DOWNLOAD_PEXELS_API"]
+    DOWNLOAD_PEXELS_CAT = settings["APP"]["DOWNLOAD_PEXELS_CAT"]
+    
     WALLPAPER_FOLDER = settings["APP"]["WALLPAPER_FOLDER"]
     WALLPAPER_FONT = settings["APP"]["WALLPAPER_FONT"]
     WALLPAPER_FONT_SIZE = settings["APP"]["WALLPAPER_FONT_SIZE"]
@@ -143,6 +148,32 @@ def download_pixabay_image():
     content = image_data.get("tags")
     
     file_name = f"{image_data.get('id')}.jpg"
+    return process_and_save_image(image_url, file_name, title, content)
+
+def download_pexels_image():
+    per_page = 50  # Getirilecek resim sayısı    
+    # Pexels API URL
+    url = "https://api.pexels.com/v1/search"
+    headers = {"Authorization": DOWNLOAD_PEXELS_API}
+    params = {"query": DOWNLOAD_PEXELS_CAT, "per_page": per_page, "orientation": "landscape"}
+    
+    response = requests.get(url, headers=headers, params=params).json()
+    if not response.get("photos"):
+        print("No images found.")
+        return ""
+    
+    filtered_photos = [photo for photo in response["photos"] if "pixabay" not in photo["photographer"].lower()]
+    if not filtered_photos:
+        print("Only Pixabay images found, skipping.")
+        return ""    
+    
+    # Rastgele bir görsel seç
+    image_data = random.choice(filtered_photos)
+    image_url = image_data["src"]["original"]
+    title = f"PEXELS: {image_data['photographer']}"
+    content = image_data.get("alt", "No description available")
+    
+    file_name = f"{image_data['id']}.jpg"
     return process_and_save_image(image_url, file_name, title, content)
 
 def download_bing_wallpaper():   
@@ -429,6 +460,8 @@ def update_wallpaper():
             image_name = download_bing_wallpaper()                    
         elif DOWNLOAD_PIXABAY:
             image_name = download_pixabay_image()            
+        elif DOWNLOAD_PEXELS:
+            image_name = download_pexels_image()            
             
         if image_name == "":
             wallpaper_path = get_wallpaper_path()            
