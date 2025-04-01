@@ -20,8 +20,10 @@ try:
     # Use settings.json file vaules
     UPDATE_TIME = settings["APP"]["UPDATE_TIME"]
     DOWNLOAD_BING = settings["APP"]["DOWNLOAD_BING"]
+    
     DOWNLOAD_NASA = settings["APP"]["DOWNLOAD_NASA"]
     DOWNLOAD_NASA_API = settings["APP"]["DOWNLOAD_NASA_API"]
+    
     DOWNLOAD_PIXABAY = settings["APP"]["DOWNLOAD_PIXABAY"]
     DOWNLOAD_PIXABAY_API = settings["APP"]["DOWNLOAD_PIXABAY_API"]
     DOWNLOAD_PIXABAY_CAT = settings["APP"]["DOWNLOAD_PIXABAY_CAT"]
@@ -137,7 +139,7 @@ def download_pixabay_image():
     # Select a random image
     image_data = random.choice(response["hits"])
     image_url = image_data.get("largeImageURL")
-    title = image_data.get("user")
+    title = f"PIXABAY: {image_data.get("user")}"
     content = image_data.get("tags")
     
     file_name = f"{image_data.get('id')}.jpg"
@@ -157,7 +159,7 @@ def download_bing_wallpaper():
     image = data["images"][0]
     image_url = "https://www.bing.com" + image["urlbase"] + "_UHD.jpg"
     image_date = image["fullstartdate"]  # Example: "20240317"    
-    title = image["title"]  # e.g., "A Beautiful Landscape"
+    title = f"BING: {image["title"]}"    # e.g., "A Beautiful Landscape"
     content = image["copyright"]  # e.g., "Image by XYZ"
 
     # Create the file name
@@ -174,7 +176,11 @@ def download_nasa_apod():
     image_url = response.get("hdurl")
     image_date = response.get("date")  # Example: "20240317"
     content = response.get("explanation")  # e.g., "Image by XYZ"
-    title = response.get("title")  # e.g., "A Beautiful Landscape"
+    title = f"NASA: {response.get("title")}"  # e.g., "A Beautiful Landscape"
+    media_type = response.get("media_type")
+    
+    if media_type == "video":
+        return "bing";
 
     # Create the file name
     file_name = f"{image_date}.jpg"
@@ -411,21 +417,32 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
 
 def update_wallpaper():   
     try:
+        global DOWNLOAD_BING
         wallpaper_path = ""
         image_folder = ""        
         backup_file_path = ""
         image_name = ""
-        if(DOWNLOAD_BING):
-            image_name = download_bing_wallpaper()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
-            image_folder = os.path.dirname(wallpaper_path)        
-            backup_file_path = backup_wallpaper(wallpaper_path)
-        elif(DOWNLOAD_NASA):
+        if DOWNLOAD_NASA:
             image_name = download_nasa_apod()
-            wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
+            if image_name == "bing":
+                print("NASA returned video link because of that i will use BING")
+                DOWNLOAD_BING = True
+                wallpaper_path = ""
+                image_folder = ""        
+                backup_file_path = ""
+                image_name = ""
+            else:
+                wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
+                image_folder = os.path.dirname(wallpaper_path)        
+                backup_file_path = backup_wallpaper(wallpaper_path)
+                
+        if DOWNLOAD_BING:
+            image_name = download_bing_wallpaper()
+            wallpaper_path = os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
             image_folder = os.path.dirname(wallpaper_path)        
             backup_file_path = backup_wallpaper(wallpaper_path)
-        elif(DOWNLOAD_PIXABAY):
+        
+        if DOWNLOAD_PIXABAY:
             image_name = download_pixabay_image()
             wallpaper_path =  os.getcwd() + "\\" + os.path.join(WALLPAPER_FOLDER, image_name)
             image_folder = os.path.dirname(wallpaper_path)        
