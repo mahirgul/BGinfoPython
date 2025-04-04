@@ -1,5 +1,5 @@
 # BGinfoPython
-- Application works like Microsoft bginfo. It adds information to your background image.
+- Application works like Microsoft bginfo. The application automatically downloads the wallpaper file and adds informations to your background image.
 
 ## Specifications
 - Automatically recognises the position of the Background image.
