@@ -3,6 +3,7 @@
 
 ## Specifications
 - Automatically recognises the position of the Background image.
+- Automatically downloads from BING - NASA Apod - Pexels - Pixabay.
 - Backs up the old background image on /backup folder in same folder .
 - Adds weather information (openweathermap.org api required)
 - For weather icons Uses pics from the /icons folder 
