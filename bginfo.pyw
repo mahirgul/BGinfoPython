@@ -446,6 +446,20 @@ def add_weather_icon(image, weather_icon_code, width, table_width, table_y_offse
     except Exception as e:
         print(f"Error add_weather_icon: {e}")
 
+def set_wallpaper(file_path):    
+    SPI_SETDESKWALLPAPER = 20
+    SPIF_UPDATEINIFILE = 0x01
+    SPIF_SENDWININICHANGE = 0x02
+
+    # 
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Control Panel\\Desktop", 0, winreg.KEY_WRITE)
+    winreg.SetValueEx(key, "WallPaper", 0, winreg.REG_SZ, file_path)
+    winreg.CloseKey(key)
+
+    # 
+    ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_path, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+
+
 def update_wallpaper():   
     try:
         wallpaper_path = ""
@@ -553,10 +567,12 @@ def update_wallpaper():
         print(f"New wallpaper saved at '{new_wallpaper_path}'.")
 
         # Set the new wallpaper as the desktop background
-        ctypes.windll.user32.SystemParametersInfoW(20, 260, new_wallpaper_path, 0)
+        #ctypes.windll.user32.SystemParametersInfoW(20, 260, new_wallpaper_path, 0)
+        set_wallpaper(new_wallpaper_path)
         print("New wallpaper set as the desktop background.")
     except Exception as e:
         print(f"Error update_wallpaper: {e}")
+        
 
 # Run the update process in a loop
 while True:
