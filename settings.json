@@ -2,16 +2,16 @@
 	"APP": {
         "UPDATE_TIME": "10",
         "DOWNLOAD_BING": true,
-	"DOWNLOAD_NASA": false,
+        "DOWNLOAD_NASA": false,
         "DOWNLOAD_NASA_API": "your_keys",
-	"DOWNLOAD_PIXABAY": false,
+        "DOWNLOAD_PIXABAY": false,
         "DOWNLOAD_PIXABAY_API": "your_keys",
         "DOWNLOAD_PIXABAY_CAT": "space",
-	"DOWNLOAD_PEXELS": true,
+        "DOWNLOAD_PEXELS": true,
         "DOWNLOAD_PEXELS_API": "your_keys",
         "DOWNLOAD_PEXELS_CAT": "sky",
         "WALLPAPER_FOLDER": "wallpaper",
-	"WALLPAPER_FONT": "verdana.ttf",
+        "WALLPAPER_FONT": "verdana.ttf",
         "WALLPAPER_FONT_SIZE": 30,
         "WALLPAPER_FONT_FCOLOR": [255, 255, 255],
         "WALLPAPER_FONT_BCOLOR": [0, 0, 0]
@@ -32,8 +32,8 @@
         "INFO_TIME": true,
         "INFO_DATE": true,
         "INFO_LANS": true,
-        "INFO_CPU": true,    
-        "INFO_RAM": true        
+        "INFO_CPU" : true,    
+        "INFO_RAM" : true        
     },
     "TABLE_SETTINGS": {
         "BLUR_RADIUS": 5,
@@ -41,6 +41,9 @@
         "CORNER_RADIUS": 25,
         "TABLE_PADDING": 40,
         "TABLE_ROW_HEIGHT": 40,
-        "BACKGROUND_OPACITY": 200
+        "BACKGROUND_OPACITY": 100,
+        "TABLE_FONT_REGULAR": "arial.ttf",
+        "TABLE_FONT_BOLD": "arialbd.ttf",
+        "TABLE_FONT_SIZE": 28
     }
 }
